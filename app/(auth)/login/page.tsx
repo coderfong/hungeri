@@ -25,7 +25,10 @@ export default function LoginPage() {
 function LoginForm() {
   const supabase = createClient();
   const params = useSearchParams();
-  const redirectTo = params.get("redirect") ?? "/";
+  // Empty when no explicit target: the phone action then routes by role
+  // (admin → /admin, merchant → /dashboard, consumer → /).
+  const requestedRedirect = params.get("redirect") ?? "";
+  const redirectTo = requestedRedirect || "/";
 
   const [state, formAction, pending] = useActionState<LoginState, FormData>(
     loginWithPhone,
@@ -67,7 +70,7 @@ function LoginForm() {
         </div>
 
         <form action={formAction} className="space-y-3">
-          <input type="hidden" name="redirect" value={redirectTo} />
+          <input type="hidden" name="redirect" value={requestedRedirect} />
           <label htmlFor="phone" className="sr-only">
             Phone number
           </label>
