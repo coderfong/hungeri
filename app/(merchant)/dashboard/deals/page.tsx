@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { requireBusiness } from "@/lib/merchant/context";
 import { DealStatusBadge } from "@/components/merchant/stat-card";
 import { DealRowActions } from "@/components/merchant/deal-row-actions";
@@ -10,8 +9,7 @@ import { formatDateTime } from "@/lib/i18n/config";
 export const metadata = { title: "Deals" };
 
 export default async function DealsListPage() {
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
   const { data: deals } = await supabase
     .from("deals")
     .select("id, title, status, start_at, end_at, deal_type")

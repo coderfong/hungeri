@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { requireBusiness } from "@/lib/merchant/context";
 import { OutletsManager } from "@/components/merchant/outlets-manager";
 import type { LocationRow } from "@/types/database";
@@ -6,8 +5,7 @@ import type { LocationRow } from "@/types/database";
 export const metadata = { title: "Outlets" };
 
 export default async function OutletsPage() {
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
   const { data } = await supabase
     .from("locations")
     .select("*")

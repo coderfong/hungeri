@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { requireBusiness } from "@/lib/merchant/context";
 import { DealForm } from "@/components/merchant/deal-form";
 import type { DealChannel, RedemptionMethod } from "@/types/database";
@@ -12,8 +11,7 @@ export default async function EditDealPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
 
   const { data: deal } = await supabase
     .from("deals")

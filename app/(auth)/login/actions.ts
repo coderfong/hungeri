@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { roleForPhone } from "@/config/role-phones";
+import { roleForPhone, phoneEmail } from "@/config/role-phones";
 import type { UserRole } from "@/types/database";
 
 /**
@@ -22,9 +22,6 @@ import type { UserRole } from "@/types/database";
  * NOTE: with no verification, anyone who types a number is signed in as its
  * owner. That's intentional for this MVP; do not ship it to production as-is.
  */
-
-/** Synthetic-email domain for phone accounts (never receives real mail). */
-const PHONE_EMAIL_DOMAIN = "phone.hungeri.app";
 
 export type LoginState = { error?: string };
 
@@ -48,7 +45,7 @@ export async function loginWithPhone(
   if (!digits) return { error: "Enter a valid phone number." };
 
   const role = roleForPhone(digits);
-  const email = `p${digits}@${PHONE_EMAIL_DOMAIN}`;
+  const email = phoneEmail(digits);
   const admin = createAdminClient();
 
   // Create the account on first sign-in; the signup trigger reads the role from

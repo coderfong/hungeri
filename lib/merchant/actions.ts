@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { DealStatus, PlacementTier } from "@/types/database";
@@ -7,7 +8,7 @@ import { TIERS } from "@/lib/placements/tiers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/auth";
-import { requireBusiness } from "@/lib/merchant/context";
+import { requireBusiness, getMerchantContext, ACTIVE_BUSINESS_COOKIE } from "@/lib/merchant/context";
 import {
   onboardingInput,
   businessInput,
@@ -102,8 +103,7 @@ export async function createBusinessWithOutlets(
 export async function updateBusiness(input: BusinessInput): Promise<Result> {
   const parsed = businessInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
   const { error } = await supabase
     .from("businesses")
     .update({
@@ -124,8 +124,7 @@ export async function updateBusiness(input: BusinessInput): Promise<Result> {
 
 /** Toggle the business live/draft (merchant publishing their storefront). */
 export async function setBusinessStatus(status: "live" | "draft"): Promise<Result> {
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
   const { error } = await supabase.from("businesses").update({ status }).eq("id", business.id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard");
@@ -136,8 +135,7 @@ export async function setBusinessStatus(status: "live" | "draft"): Promise<Resul
 export async function addOutlet(input: OutletInput): Promise<Result> {
   const parsed = outletInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
   const { error } = await supabase.from("locations").insert({
     business_id: business.id,
     address: parsed.data.address,
@@ -152,9 +150,13 @@ export async function addOutlet(input: OutletInput): Promise<Result> {
 }
 
 export async function deleteOutlet(id: string): Promise<Result> {
-  await requireBusiness(); // ensures merchant context; RLS enforces ownership
-  const supabase = await createClient();
-  const { error } = await supabase.from("locations").delete().eq("id", id);
+  const { business, db: supabase } = await requireBusiness();
+  // Scope to the active business (RLS also enforces this for normal merchants).
+  const { error } = await supabase
+    .from("locations")
+    .delete()
+    .eq("id", id)
+    .eq("business_id", business.id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard/outlets");
   return { ok: true };
@@ -167,8 +169,7 @@ export async function saveDeal(
 ): Promise<Result<{ id: string }>> {
   const parsed = dealInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
   const d = parsed.data;
 
   // Publishing routes through moderation; drafts stay editable. A live end date
@@ -210,9 +211,12 @@ export async function saveDeal(
 }
 
 export async function deleteDeal(id: string): Promise<Result> {
-  await requireBusiness();
-  const supabase = await createClient();
-  const { error } = await supabase.from("deals").delete().eq("id", id);
+  const { business, db: supabase } = await requireBusiness();
+  const { error } = await supabase
+    .from("deals")
+    .delete()
+    .eq("id", id)
+    .eq("business_id", business.id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard/deals");
   return { ok: true };
@@ -227,8 +231,7 @@ export async function createPlacement(
   dealId: string,
   tier: PlacementTier,
 ): Promise<Result<{ id: string }>> {
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
 
   const { data: deal } = await supabase
     .from("deals")
@@ -300,4 +303,23 @@ export async function finishOnboarding(input: OnboardingInput) {
   const res = await createBusinessWithOutlets(input);
   if (res.ok) redirect("/dashboard");
   return res;
+}
+
+// ── Super merchant: switch which business is being managed ─────────────────────
+export async function setActiveBusiness(formData: FormData): Promise<void> {
+  // Only a super merchant may switch; everyone else is pinned to their own.
+  const { isSuper } = await getMerchantContext();
+  if (!isSuper) redirect("/dashboard");
+
+  const businessId = String(formData.get("businessId") ?? "");
+  const cookieStore = await cookies();
+  if (businessId) {
+    cookieStore.set(ACTIVE_BUSINESS_COOKIE, businessId, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+  redirect("/dashboard");
 }

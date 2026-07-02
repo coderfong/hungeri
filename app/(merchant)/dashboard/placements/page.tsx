@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireBusiness } from "@/lib/merchant/context";
 import {
@@ -11,8 +10,7 @@ import type { PlacementTier } from "@/types/database";
 export const metadata = { title: "Placements" };
 
 export default async function PlacementsPage() {
-  const { business } = await requireBusiness();
-  const supabase = await createClient();
+  const { business, db: supabase } = await requireBusiness();
 
   // Live deals the merchant can promote.
   const { data: deals } = await supabase

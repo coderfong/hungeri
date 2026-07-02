@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { setActiveBusiness } from "@/lib/merchant/actions";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -31,12 +32,53 @@ export type SidebarBusiness = {
   status: string;
 } | null;
 
+export type SwitcherBusiness = { id: string; name: string; slug: string };
+
 function isActive(pathname: string, href: string, exact?: boolean) {
   return exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
 }
 
+/** Super-merchant business picker — submits on change to switch the active shop. */
+function BusinessSwitcher({
+  businesses,
+  activeBusinessId,
+}: {
+  businesses: SwitcherBusiness[];
+  activeBusinessId: string | null;
+}) {
+  return (
+    <form action={setActiveBusiness} className="mb-3">
+      <label className="mb-1 block px-1 text-[10px] font-bold uppercase tracking-wide text-persimmon-300">
+        Managing (super)
+      </label>
+      <select
+        name="businessId"
+        defaultValue={activeBusinessId ?? ""}
+        onChange={(e) => e.currentTarget.form?.requestSubmit()}
+        className="w-full rounded-[10px] border border-[#4A3A2E] bg-[#33271F] px-2.5 py-2 text-[13px] font-semibold text-white outline-none focus:border-persimmon-400"
+      >
+        {businesses.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+    </form>
+  );
+}
+
 /** Dark merchant sidebar (desktop) + horizontal nav (mobile). */
-export function MerchantSidebar({ business }: { business: SidebarBusiness }) {
+export function MerchantSidebar({
+  business,
+  isSuper = false,
+  businesses = [],
+  activeBusinessId = null,
+}: {
+  business: SidebarBusiness;
+  isSuper?: boolean;
+  businesses?: SwitcherBusiness[];
+  activeBusinessId?: string | null;
+}) {
   const pathname = usePathname();
   return (
     <>
@@ -71,6 +113,9 @@ export function MerchantSidebar({ business }: { business: SidebarBusiness }) {
           })}
         </nav>
         <div className="mt-auto">
+          {isSuper && businesses.length > 0 && (
+            <BusinessSwitcher businesses={businesses} activeBusinessId={activeBusinessId} />
+          )}
           <Link
             href="/"
             className="mb-2 flex items-center gap-2 px-3 text-xs font-semibold text-ink-300 hover:text-white"
@@ -112,8 +157,26 @@ export function MerchantSidebar({ business }: { business: SidebarBusiness }) {
             </span>
             <span className="font-display font-extrabold">Hungeri</span>
           </Link>
-          {business && (
-            <span className="ml-auto truncate text-sm font-bold text-ink-300">{business.name}</span>
+          {isSuper && businesses.length > 0 ? (
+            <form action={setActiveBusiness} className="ml-auto">
+              <select
+                name="businessId"
+                defaultValue={activeBusinessId ?? ""}
+                onChange={(e) => e.currentTarget.form?.requestSubmit()}
+                aria-label="Managing business"
+                className="max-w-[160px] truncate rounded-[9px] border border-[#4A3A2E] bg-[#33271F] px-2 py-1.5 text-[13px] font-semibold text-white outline-none"
+              >
+                {businesses.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </form>
+          ) : (
+            business && (
+              <span className="ml-auto truncate text-sm font-bold text-ink-300">{business.name}</span>
+            )
           )}
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto px-3 pb-2">
