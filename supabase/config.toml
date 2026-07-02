@@ -1,0 +1,7 @@
+# Supabase CLI project config. `project_id` is your local working name; the
+# remote project is selected via `supabase link --project-ref <ref>`.
+project_id = "hungeri"
+
+[db]
+# Postgres major version used by Supabase cloud at time of writing.
+major_version = 17

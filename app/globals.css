@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/*
+  Hungeri design tokens (from the Style Tile handoff). Defined in Tailwind v4's
+  @theme so they generate utilities: bg-persimmon-500, text-savings, font-display,
+  rounded-card, shadow-e3, etc. Colour meaning is enforced by convention:
+  green = savings only, coral = urgency only, gold = paid/featured only.
+*/
+@theme {
+  /* ── Brand: Persimmon ── */
+  --color-persimmon-50: #fff2ec;
+  --color-persimmon-100: #ffd9c6;
+  --color-persimmon-200: #ffe0d2;
+  --color-persimmon-300: #ff8a5c;
+  --color-persimmon-400: #ff6b33;
+  --color-persimmon-500: #ff5a1f;
+  --color-persimmon-600: #e04510;
+  --color-persimmon-700: #b5360b;
+
+  /* ── Semantic ── */
+  --color-savings: #0e9f57; /* discount values, "you save" — ONLY */
+  --color-savings-bg: #e6f7ee;
+  --color-urgent: #ff2d55; /* countdowns, expiring — ONLY */
+  --color-urgent-bg: #ffe9ed;
+  --color-warning: #f5a623;
+  --color-error: #e5484d;
+  --color-star: #f5a623;
+
+  /* ── Featured / Ad (calm gold, disclosed) ── */
+  --color-ad-bg: #fbf1ce;
+  --color-ad-border: #f0e0a0;
+  --color-ad-text: #7a6a12;
+
+  /* ── Warm neutrals ── */
+  --color-ink-900: #1c1410;
+  --color-ink-700: #3d332c;
+  --color-ink-500: #6b5f56;
+  --color-ink-300: #b6aba1;
+  --color-muted: #918579;
+  --color-line: #ece4dd;
+  --color-line-soft: #f3ece5;
+  --color-bg: #fff9f5;
+  --color-surface: #ffffff;
+
+  /* ── Fonts ── */
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* ── Radii ── */
+  --radius-pill: 999px;
+  --radius-chip: 7px;
+  --radius-btn: 12px;
+  --radius-card: 18px;
+  --radius-card-lg: 20px;
+
+  /* ── Elevation ── */
+  --shadow-e1: 0 1px 3px rgba(28, 20, 16, 0.1);
+  --shadow-e2: 0 6px 16px rgba(28, 20, 16, 0.12);
+  --shadow-e3: 0 14px 30px rgba(255, 90, 31, 0.22);
+  --shadow-card: 0 6px 20px rgba(28, 20, 16, 0.1);
+  --shadow-cta: 0 6px 14px rgba(255, 90, 31, 0.3);
+}
+
+::selection {
+  background: var(--color-persimmon-100);
+}
+
+/* Shimmer for skeleton loaders. */
+@keyframes shimmer {
+  0% {
+    background-position: -300px 0;
+  }
+  100% {
+    background-position: 300px 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-line-soft) 0px,
+    #f8f2ec 140px,
+    var(--color-line-soft) 280px
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+/* Hide scrollbars on horizontal chip rails while keeping them scrollable. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Respect reduced-motion for the shimmer + transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

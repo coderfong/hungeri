@@ -1,0 +1,22 @@
+{
+  "$comment": "Hungeri feed ranking weights. Config-driven so they can be tuned without code changes. Each sub-score is normalised 0..1, multiplied by its weight, and summed. Higher total = higher in the feed. Paid placement is the heaviest single lever but never the only one, and paid items are always labelled 'Featured · Ad' in the UI.",
+  "weights": {
+    "paid": 100,
+    "distance": 35,
+    "recency": 16,
+    "expiry": 12,
+    "engagement": 14
+  },
+  "tierScore": {
+    "spotlight": 1.0,
+    "featured": 0.75,
+    "boosted": 0.55
+  },
+  "distance": {
+    "fullScoreMeters": 300,
+    "zeroScoreMeters": 8000
+  },
+  "recencyHalfLifeHours": 48,
+  "expirySoonHours": 24,
+  "engagementSaturation": 200
+}
