@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Heart, LogOut, Store, ShieldAlert } from "lucide-react";
 import { getCurrentProfile } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { RoleAvatar } from "@/components/role-avatar";
 
 export const metadata = { title: "Profile" };
 
@@ -13,9 +14,7 @@ export default async function AccountPage() {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 pt-6">
       <div className="mb-6 flex items-center gap-4">
-        <div className="flex size-16 items-center justify-center rounded-2xl bg-persimmon-200 font-display text-2xl font-extrabold text-persimmon-700">
-          {(profile.display_name ?? profile.email).charAt(0).toUpperCase()}
-        </div>
+        <RoleAvatar role={profile.role} size={64} className="size-16 shrink-0 shadow-sm" />
         <div>
           <h1 className="font-display text-2xl font-extrabold">
             {profile.display_name ?? "Your profile"}

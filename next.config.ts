@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Our own default role avatars in /public/avatars are SVGs. Allow the image
+    // optimizer to serve them, sandboxed by a strict CSP (no scripts).
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       // Curated featured-banner imagery (Suntec directory creative assets).
       {
