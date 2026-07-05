@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { roleForPhone, phoneEmail } from "@/config/role-phones";
 import type { UserRole } from "@/types/database";
 
@@ -10,9 +11,10 @@ import type { UserRole } from "@/types/database";
  *
  * There's no SMS/OTP step: a phone number IS the credential. We map the number
  * to a deterministic synthetic email (the users table + signup trigger require a
- * non-null email), create that account on first use, then mint a session using
- * the same admin generateLink → /auth/confirm mechanism as the dev sign-in
- * helper. Same number => same account, every time.
+ * non-null email), create that account on first use, then mint a one-time
+ * magiclink token (admin generateLink) and immediately verify it with the
+ * cookie-bound client to establish the session in this action's response.
+ * Same number => same account, every time.
  *
  * Role assignment: a few fixed numbers map to merchant/admin (see role-phones);
  * everyone else is a consumer. The role is set when the account is first created
@@ -47,11 +49,11 @@ export async function loginWithPhone(
   const role = roleForPhone(digits);
   const email = phoneEmail(digits);
 
-  // All admin work is wrapped so a config problem (e.g. a missing service-role
+  // All auth work is wrapped so a config problem (e.g. a missing service-role
   // key on the server) surfaces as a visible message instead of an unhandled
   // 500 that leaves the form silently stuck. The redirect() below must stay
   // OUTSIDE this try — it signals success by throwing NEXT_REDIRECT.
-  let tokenHash: string | undefined;
+  let ok = false;
   try {
     const admin = createAdminClient();
 
@@ -66,22 +68,34 @@ export async function loginWithPhone(
       return { error: createErr.message };
     }
 
-    // Mint a one-time token and hand it to /auth/confirm, which sets the session.
+    // Mint a one-time token, then establish the session HERE by verifying it
+    // with the cookie-bound client so the auth cookies are written into THIS
+    // action's response. Previously we redirected to the /auth/confirm route
+    // handler to do the verify, but that hop is followed by the client router
+    // and its Set-Cookie is dropped — leaving protected pages (e.g. /dashboard)
+    // unauthenticated and bouncing straight back to /login.
     const { data, error } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
     });
     if (error) return { error: error.message };
-    tokenHash = data?.properties?.hashed_token;
+    const tokenHash = data?.properties?.hashed_token;
+    if (!tokenHash) return { error: "Could not sign you in. Try again." };
+
+    const supabase = await createClient();
+    const { error: otpErr } = await supabase.auth.verifyOtp({
+      type: "magiclink",
+      token_hash: tokenHash,
+    });
+    if (otpErr) return { error: otpErr.message };
+    ok = true;
   } catch (err) {
-    console.error("loginWithPhone: admin auth failed", err);
+    console.error("loginWithPhone: auth failed", err);
     return { error: "Sign-in is temporarily unavailable. Please try again shortly." };
   }
 
-  if (!tokenHash) return { error: "Could not sign you in. Try again." };
+  if (!ok) return { error: "Could not sign you in. Try again." };
 
   const redirectTo = requested || homeForRole(role);
-  redirect(
-    `/auth/confirm?token_hash=${tokenHash}&type=magiclink&redirect=${encodeURIComponent(redirectTo)}`,
-  );
+  redirect(redirectTo);
 }
