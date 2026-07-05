@@ -95,6 +95,7 @@ export interface Database {
           website: string | null;
           socials: Json;
           verified: boolean;
+          spotlight: boolean;
           status: BusinessStatus;
           qr_token: string;
           created_at: string;
@@ -114,6 +115,7 @@ export interface Database {
           website?: string | null;
           socials?: Json;
           verified?: boolean;
+          spotlight?: boolean;
           status?: BusinessStatus;
           created_at?: string;
           updated_at?: string;

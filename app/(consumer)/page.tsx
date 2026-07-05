@@ -95,12 +95,11 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
   // Admins and super-merchants can set any shop's cover image inline.
   const canEdit = !!profile && (profile.role === "admin" || isSuperMerchant(profile.email));
 
-  // Spotlight = paid-featured shops, else the top-ranked "Top picks". Every
-  // slide is a real business linking to its own /b/[slug] page (searchable,
-  // and its cover is editable inline — no external mall-directory banners).
-  const featured = shops.filter((s) => s.featured);
-  // The carousel stays deal-driven — dealless shops only appear in the grid.
-  const picks = featured.length > 0 ? featured : shops.filter((s) => s.headline).slice(0, 6);
+  // Carousel = admin/super curated spotlight shops + paid-featured shops, else
+  // the top-ranked "Top picks". Every slide is a real business linking to its
+  // own /b/[slug] page (searchable, cover editable inline).
+  const curated = shops.filter((s) => s.spotlight || s.featured);
+  const picks = curated.length > 0 ? curated : shops.filter((s) => s.headline).slice(0, 6);
   const pickSlugs = new Set(picks.map((s) => s.business.slug));
   const rest = shops.filter((s) => !pickSlugs.has(s.business.slug));
 
@@ -112,11 +111,13 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
     href: `/b/${s.business.slug}`,
     verified: s.business.verified,
     featured: s.featured,
+    spotlight: s.spotlight,
     deals: s.dealCount,
     cuisine: s.business.cuisine_tags[0] ?? null,
     savings: s.headline ? savingsLabel(s.headline) : null,
   }));
   const hasFeatured = carousel.some((b) => b.featured);
+  const hasCurated = curated.length > 0;
 
   return (
     <div className="pb-8 pt-4">
@@ -127,7 +128,7 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
               <Sparkles className="size-3.5 text-ad-text" aria-hidden />
             </span>
             <h2 className="font-display text-lg font-extrabold tracking-tight">
-              {hasFeatured ? "Spotlight near you" : "Top picks near you"}
+              {hasCurated ? "Spotlight near you" : "Top picks near you"}
             </h2>
             {hasFeatured && (
               <span className="ml-auto rounded-pill bg-ad-bg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-ad-text">

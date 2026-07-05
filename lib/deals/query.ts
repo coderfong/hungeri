@@ -195,8 +195,31 @@ export type ShopListing = {
   /** Top-ranked live deal, or null for a live shop that has no deals yet. */
   headline: FeedDeal | null;
   dealCount: number;
+  /** Paid placement is active. */
   featured: boolean;
+  /** Admin/super-merchant curated into the homepage carousel. */
+  spotlight: boolean;
 };
+
+/**
+ * Business ids curated into the homepage carousel. Guarded: if the `spotlight`
+ * column hasn't been added yet (migration 0011) this quietly returns none so the
+ * feed never breaks.
+ */
+async function getSpotlightIds(): Promise<Set<string>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("spotlight", true)
+      .eq("status", "live");
+    if (error) return new Set();
+    return new Set((data ?? []).map((b) => b.id));
+  } catch {
+    return new Set();
+  }
+}
 
 const SHOP_SELECT = "id, name, slug, price_level, cuisine_tags, logo_url, cover_url, verified";
 
@@ -215,22 +238,32 @@ function hasAnyFilter(f: DealFilters): boolean {
 }
 
 export async function getFeedShops(filters: DealFilters = {}): Promise<ShopListing[]> {
-  const deals = await getFeedDeals({ ...filters, limit: filters.limit ?? 120 });
+  const [deals, spotlightIds] = await Promise.all([
+    getFeedDeals({ ...filters, limit: filters.limit ?? 120 }),
+    getSpotlightIds(),
+  ]);
   const byShop = new Map<string, ShopListing>();
   for (const d of deals) {
     const biz = d.businesses;
     if (!biz) continue;
     const existing = byShop.get(biz.slug);
     if (!existing) {
-      byShop.set(biz.slug, { business: biz, headline: d, dealCount: 1, featured: d.featured });
+      byShop.set(biz.slug, {
+        business: biz,
+        headline: d,
+        dealCount: 1,
+        featured: d.featured,
+        spotlight: spotlightIds.has(biz.id),
+      });
     } else {
       existing.dealCount += 1;
       existing.featured = existing.featured || d.featured;
     }
   }
 
-  // Include live shops that have no live deals so every merchant is discoverable.
-  // Only on the unfiltered feed — filtered views are inherently deal-driven.
+  // Include live shops that have no live deals so every merchant is discoverable
+  // (and so a spotlighted dealless shop still appears). Only on the unfiltered
+  // feed — filtered views are inherently deal-driven.
   if (!hasAnyFilter(filters)) {
     const supabase = await createClient();
     const { data } = await supabase.from("businesses").select(SHOP_SELECT).eq("status", "live");
@@ -241,6 +274,7 @@ export async function getFeedShops(filters: DealFilters = {}): Promise<ShopListi
         headline: null,
         dealCount: 0,
         featured: false,
+        spotlight: spotlightIds.has(b.id),
       });
     }
   }

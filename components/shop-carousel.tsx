@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import type { FeaturedBanner } from "@/config/featured-banners";
 import { DealImage } from "@/components/deal-image";
 import { EditableShopImage } from "@/components/editable-shop-image";
+import { SpotlightToggle } from "@/components/spotlight-toggle";
 import { FeaturedLabel } from "@/components/ui/badges";
 import { cn } from "@/lib/utils";
 
@@ -129,7 +130,8 @@ function ShopBanner({
   priority?: boolean;
   canEdit?: boolean;
 }) {
-  const { businessId, name, image, href, verified, featured, deals, cuisine, savings } = banner;
+  const { businessId, name, image, href, verified, featured, spotlight, deals, cuisine, savings } =
+    banner;
 
   const inner = (
     <>
@@ -142,12 +144,21 @@ function ShopBanner({
       <span className="absolute left-4 top-4 md:left-6 md:top-6">
         {featured ? (
           <FeaturedLabel short />
+        ) : spotlight ? (
+          <span className="inline-flex items-center gap-1 rounded-[9px] bg-persimmon-500 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-white shadow-e1">
+            <Sparkles className="size-3.5" aria-hidden /> Spotlight
+          </span>
         ) : (
           <span className="rounded-[9px] bg-ink-900/80 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-white backdrop-blur">
             Top pick
           </span>
         )}
       </span>
+      {canEdit && businessId && (
+        <span className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
+          <SpotlightToggle businessId={businessId} active={!!spotlight} />
+        </span>
+      )}
       <div className="absolute inset-x-4 bottom-4 text-white md:inset-x-6 md:bottom-6">
         <h3 className="flex items-center gap-2 font-display text-[28px] font-extrabold leading-none tracking-tight md:text-[40px]">
           <span className="truncate">{name}</span>

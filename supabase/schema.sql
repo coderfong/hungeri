@@ -111,6 +111,8 @@ create table public.businesses (
   website        text,
   socials        jsonb not null default '{}'::jsonb,
   verified       boolean not null default false,
+  -- Admin/super-merchant curated homepage carousel flag (see 0011).
+  spotlight      boolean not null default false,
   status         business_status not null default 'draft',
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()

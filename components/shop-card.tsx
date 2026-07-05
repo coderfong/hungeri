@@ -4,6 +4,7 @@ import type { ShopListing } from "@/lib/deals/query";
 import { dealBadge, savingsLabel } from "@/lib/deals/format";
 import { DealImage } from "@/components/deal-image";
 import { EditableShopImage } from "@/components/editable-shop-image";
+import { SpotlightToggle } from "@/components/spotlight-toggle";
 import { DealTypeBadge, PriceLevel, FeaturedLabel } from "@/components/ui/badges";
 
 /** Small "N deals" detail shown beside the shop name. */
@@ -56,7 +57,8 @@ export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit
       <div className="flex items-center gap-2 p-3.5 text-xs font-semibold text-muted">
         {biz.cuisine_tags[0] && <span className="text-ink-700">{biz.cuisine_tags[0]}</span>}
         <PriceLevel level={biz.price_level} />
-        <span className="ml-auto">
+        <span className="ml-auto flex items-center gap-2">
+          {canEdit && <SpotlightToggle businessId={biz.id} active={shop.spotlight} />}
           {dealCount > 0 ? (
             <DealCountTag count={dealCount} />
           ) : (

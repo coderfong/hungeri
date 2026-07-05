@@ -16,6 +16,8 @@ export type FeaturedBanner = {
   verified?: boolean;
   /** Paid placements get the gold "Featured" label. */
   featured?: boolean;
+  /** Admin/super-merchant curated into the carousel (persimmon "Spotlight"). */
+  spotlight?: boolean;
   /** Live deal count, when known. */
   deals?: number | null;
   /** Small overlay detail, e.g. cuisine. */
