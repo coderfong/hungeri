@@ -327,6 +327,7 @@ export interface Database {
       };
       is_admin: { Args: Record<string, never>; Returns: boolean };
       owns_business: { Args: { biz_id: string }; Returns: boolean };
+      set_user_role: { Args: { target: string; new_role: UserRole }; Returns: undefined };
     };
     Enums: {
       user_role: UserRole;

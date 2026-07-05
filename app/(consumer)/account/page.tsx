@@ -11,8 +11,9 @@ export default async function AccountPage() {
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login?redirect=/account");
 
-  // Phone logins have a synthetic p…@phone.hungeri.app email that we never show.
-  const isPhoneAccount = profile.email.endsWith("@phone.hungeri.app");
+  // Phone logins have a synthetic p…@phone.hungeri.app email (or a blanked one)
+  // that we never show.
+  const hideEmail = !profile.email || profile.email.endsWith("@phone.hungeri.app");
 
   return (
     <main className="mx-auto w-full max-w-2xl px-5 pt-6">
@@ -22,7 +23,7 @@ export default async function AccountPage() {
           <h1 className="font-display text-2xl font-extrabold">
             {profile.display_name ?? "Your profile"}
           </h1>
-          {!isPhoneAccount && <p className="text-sm text-muted">{profile.email}</p>}
+          {!hideEmail && <p className="text-sm text-muted">{profile.email}</p>}
           <span className="mt-1 inline-block rounded-full bg-line-soft px-2.5 py-0.5 text-xs font-bold capitalize text-ink-500">
             {profile.role}
           </span>

@@ -8,6 +8,7 @@ import {
   Store,
   Sparkles,
   LayoutDashboard,
+  Users,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const NAV = [
   { href: "/admin/moderation", label: "Moderation", icon: ShieldAlert, badgeKey: "pending" },
   { href: "/admin/reports", label: "Reports", icon: Flag, badgeKey: "reports" },
   { href: "/admin/businesses", label: "Businesses", icon: Store },
+  { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/curate", label: "Curate", icon: Sparkles },
 ] as const;
 

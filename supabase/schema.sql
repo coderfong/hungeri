@@ -474,6 +474,21 @@ create trigger trg_users_no_role_escalation
   before update on public.users
   for each row execute function public.prevent_role_escalation();
 
+-- Admin-only role change (see 0010). SECURITY DEFINER bypasses the per-row
+-- users_update_self RLS; is_admin() (checked here and in the trigger above)
+-- uses the caller's auth.uid(), so it must be called from an admin session.
+create or replace function public.set_user_role(target uuid, new_role user_role)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins may change a user role' using errcode = 'insufficient_privilege';
+  end if;
+  update public.users set role = new_role where id = target;
+end;
+$$;
+revoke all on function public.set_user_role(uuid, user_role) from public, anon;
+grant execute on function public.set_user_role(uuid, user_role) to authenticated;
+
 -- ── consumer_profiles ────────────────────────────────────────────────────────
 create policy cp_owner_all on public.consumer_profiles
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
