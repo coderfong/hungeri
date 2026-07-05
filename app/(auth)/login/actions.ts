@@ -46,28 +46,39 @@ export async function loginWithPhone(
 
   const role = roleForPhone(digits);
   const email = phoneEmail(digits);
-  const admin = createAdminClient();
 
-  // Create the account on first sign-in; the signup trigger reads the role from
-  // metadata. On repeat logins it already exists (role stays as first created).
-  const { error: createErr } = await admin.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: { display_name: `+${digits}`, phone: digits, role },
-  });
-  if (createErr && !/exist|registered|already/i.test(createErr.message)) {
-    return { error: createErr.message };
+  // All admin work is wrapped so a config problem (e.g. a missing service-role
+  // key on the server) surfaces as a visible message instead of an unhandled
+  // 500 that leaves the form silently stuck. The redirect() below must stay
+  // OUTSIDE this try — it signals success by throwing NEXT_REDIRECT.
+  let tokenHash: string | undefined;
+  try {
+    const admin = createAdminClient();
+
+    // Create the account on first sign-in; the signup trigger reads the role
+    // from metadata. On repeat logins it already exists (role stays as first set).
+    const { error: createErr } = await admin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: { display_name: `+${digits}`, phone: digits, role },
+    });
+    if (createErr && !/exist|registered|already/i.test(createErr.message)) {
+      return { error: createErr.message };
+    }
+
+    // Mint a one-time token and hand it to /auth/confirm, which sets the session.
+    const { data, error } = await admin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+    });
+    if (error) return { error: error.message };
+    tokenHash = data?.properties?.hashed_token;
+  } catch (err) {
+    console.error("loginWithPhone: admin auth failed", err);
+    return { error: "Sign-in is temporarily unavailable. Please try again shortly." };
   }
 
-  // Mint a one-time token and hand it to /auth/confirm, which sets the session.
-  const { data, error } = await admin.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-  });
-  const tokenHash = data?.properties?.hashed_token;
-  if (error || !tokenHash) {
-    return { error: error?.message ?? "Could not sign you in. Try again." };
-  }
+  if (!tokenHash) return { error: "Could not sign you in. Try again." };
 
   const redirectTo = requested || homeForRole(role);
   redirect(

@@ -8,6 +8,7 @@ import { SG_AREAS } from "@/lib/geo/areas";
 import { finishOnboarding } from "@/lib/merchant/actions";
 import type { OnboardingInput } from "@/lib/merchant/schema";
 import { Button } from "@/components/ui/button";
+import { LogoMark } from "@/components/logo";
 import { ImageUpload } from "@/components/merchant/image-upload";
 
 const inputCls =
@@ -92,13 +93,7 @@ export function OnboardingWizard() {
                 <ArrowLeft className="size-5" aria-hidden />
               </button>
             ) : (
-              <span className="flex size-8 items-center justify-center rounded-[10px] bg-persimmon-500">
-                <span
-                  className="size-3 rounded-full border-[2.5px] border-white"
-                  style={{ borderBottomColor: "transparent", transform: "rotate(45deg)" }}
-                  aria-hidden
-                />
-              </span>
+              <LogoMark className="size-8 rounded-[10px]" />
             )}
             <span className="font-display text-lg font-extrabold">
               {step === 1 ? "Tell us about your business" : step === 2 ? "Add your outlets" : "Verify your business"}

@@ -11,6 +11,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/logo";
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -29,13 +30,7 @@ export function AdminSidebar({ counts }: { counts: { pending: number; reports: n
     <>
       <aside className="hidden w-[210px] shrink-0 flex-col bg-ink-900 p-4 text-white md:flex">
         <Link href="/" className="mb-5 flex items-center gap-2.5 px-2 pt-2">
-          <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-persimmon-500">
-            <span
-              className="size-3 rounded-full border-[2.5px] border-white"
-              style={{ borderBottomColor: "transparent", transform: "rotate(45deg)" }}
-              aria-hidden
-            />
-          </span>
+          <LogoMark className="size-[30px] rounded-[9px]" />
           <span className="font-display text-[17px] font-extrabold">Hungeri</span>
           <span className="rounded-[5px] bg-persimmon-300 px-1.5 py-0.5 text-[9px] font-extrabold text-ink-900">
             ADMIN

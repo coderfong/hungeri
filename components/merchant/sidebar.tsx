@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { setActiveBusiness } from "@/lib/merchant/actions";
+import { LogoMark } from "@/components/logo";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -85,13 +86,7 @@ export function MerchantSidebar({
       {/* Desktop rail */}
       <aside className="hidden w-[220px] shrink-0 flex-col bg-ink-900 p-4 text-white md:flex">
         <Link href="/" className="mb-5 flex items-center gap-2.5 px-2 pt-2">
-          <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-persimmon-500">
-            <span
-              className="size-3 rounded-full border-[2.5px] border-white"
-              style={{ borderBottomColor: "transparent", transform: "rotate(45deg)" }}
-              aria-hidden
-            />
-          </span>
+          <LogoMark className="size-[30px] rounded-[9px]" />
           <span className="font-display text-lg font-extrabold">Hungeri</span>
         </Link>
         <nav className="flex flex-col gap-1">

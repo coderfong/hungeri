@@ -7,6 +7,7 @@ import { ArrowRight, Phone } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { clientEnv } from "@/lib/env";
 import { Button } from "@/components/ui/button";
+import { LogoMark } from "@/components/logo";
 import { loginWithPhone, type LoginState } from "./actions";
 
 /**
@@ -52,13 +53,7 @@ function LoginForm() {
 
       <div className="relative">
         <div className="mb-7 text-center">
-          <span className="mx-auto mb-5 flex size-[60px] items-center justify-center rounded-[18px] bg-persimmon-500 shadow-[0_10px_24px_rgba(255,90,31,.4)]">
-            <span
-              className="size-6 rounded-full border-[3.5px] border-white"
-              style={{ borderBottomColor: "transparent", transform: "rotate(45deg)" }}
-              aria-hidden
-            />
-          </span>
+          <LogoMark className="mx-auto mb-5 block size-[60px] rounded-[18px] shadow-[0_10px_24px_rgba(255,90,31,.4)]" />
           <h1 className="font-display text-3xl font-extrabold leading-tight">
             The good deals,
             <br />
