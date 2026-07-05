@@ -3,6 +3,7 @@ import { BadgeCheck, Tag as TagIcon } from "lucide-react";
 import type { ShopListing } from "@/lib/deals/query";
 import { dealBadge, savingsLabel } from "@/lib/deals/format";
 import { DealImage } from "@/components/deal-image";
+import { EditableShopImage } from "@/components/editable-shop-image";
 import { DealTypeBadge, SavingsBadge, PriceLevel, FeaturedLabel } from "@/components/ui/badges";
 
 /** Small "N deals" detail shown beside the shop name. */
@@ -16,7 +17,7 @@ function DealCountTag({ count }: { count: number }) {
 }
 
 /** Standard shop listing card — the SHOP is the headline; deals are a side detail. */
-export function ShopCard({ shop }: { shop: ShopListing }) {
+export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit?: boolean }) {
   const { business: biz, headline, dealCount } = shop;
   const savings = savingsLabel(headline);
   return (
@@ -25,7 +26,11 @@ export function ShopCard({ shop }: { shop: ShopListing }) {
       className="block overflow-hidden rounded-card-lg border border-line-soft bg-surface shadow-card transition-shadow hover:shadow-e2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100"
     >
       <div className="relative h-[150px]">
-        <DealImage src={headline.image_url} alt={biz.name} />
+        {canEdit ? (
+          <EditableShopImage dealId={headline.id} src={headline.image_url} alt={biz.name} />
+        ) : (
+          <DealImage src={headline.image_url} alt={biz.name} />
+        )}
         <span className="absolute left-3 top-3">
           <DealTypeBadge label={dealBadge(headline)} />
         </span>

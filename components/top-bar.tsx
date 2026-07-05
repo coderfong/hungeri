@@ -1,8 +1,11 @@
 import Link from "next/link";
-import { Search, Heart, MapPin, ChevronDown } from "lucide-react";
+import { Heart, MapPin, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { RoleAvatar } from "@/components/role-avatar";
+import { SearchBox } from "@/components/search-box";
+import type { UserRole } from "@/types/database";
 
-export type ShellUser = { display_name: string | null; email: string } | null;
+export type ShellUser = { display_name: string | null; email: string; role: UserRole } | null;
 
 /** Desktop top bar (md+). On mobile each screen renders its own header. */
 export function TopBar({ user, location = "Singapore" }: { user: ShellUser; location?: string }) {
@@ -17,24 +20,16 @@ export function TopBar({ user, location = "Singapore" }: { user: ShellUser; loca
         {location}
         <ChevronDown className="size-[15px] text-muted" aria-hidden />
       </Link>
-      <Link
-        href="/search"
-        className="mx-auto flex max-w-[440px] flex-1 items-center gap-2.5 rounded-btn border-[1.5px] border-line bg-bg px-3.5 py-2.5 text-sm text-muted hover:border-ink-300"
-      >
-        <Search className="size-[18px]" aria-hidden />
-        Search deals, food, places…
-      </Link>
+      <div className="mx-auto w-full max-w-[440px]">
+        <SearchBox variant="bar" />
+      </div>
       <div className="flex items-center gap-3.5">
         <Link href="/saved" aria-label="Saved deals" className="text-ink-500 hover:text-urgent">
           <Heart className="size-[22px]" aria-hidden />
         </Link>
         {user ? (
-          <Link
-            href="/account"
-            aria-label="Your profile"
-            className="flex size-9 items-center justify-center rounded-full bg-persimmon-200 font-display font-bold text-persimmon-700"
-          >
-            {(user.display_name ?? user.email).charAt(0).toUpperCase()}
+          <Link href="/account" aria-label="Your profile" className="shrink-0">
+            <RoleAvatar role={user.role} size={36} className="size-9" />
           </Link>
         ) : (
           <Link href="/login" className="text-sm font-bold text-persimmon-500 hover:underline">

@@ -13,7 +13,7 @@ export default async function ConsumerLayout({
 }) {
   const profile = await getCurrentProfile();
   const user = profile
-    ? { display_name: profile.display_name, email: profile.email }
+    ? { display_name: profile.display_name, email: profile.email, role: profile.role }
     : null;
 
   return (

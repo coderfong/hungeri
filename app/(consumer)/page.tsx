@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Search, MapPin, ChevronDown, Sparkles } from "lucide-react";
+import { MapPin, ChevronDown, Sparkles } from "lucide-react";
 import { getFeedShops } from "@/lib/deals/query";
 import { getCurrentProfile } from "@/lib/auth";
+import { isSuperMerchant } from "@/config/role-phones";
 import { parseFilters, type SearchParams } from "@/lib/deals/filters";
 import { ShopCard } from "@/components/shop-card";
 import { ShopCarousel } from "@/components/shop-carousel";
 import { Logo } from "@/components/logo";
+import { RoleAvatar } from "@/components/role-avatar";
+import { SearchBox } from "@/components/search-box";
 import { featuredBanners, type FeaturedBanner } from "@/config/featured-banners";
 import { savingsLabel } from "@/lib/deals/format";
 import { FeedSkeleton } from "@/components/feed-skeleton";
@@ -37,13 +40,7 @@ export default async function FeedPage({
           </Suspense>
         </div>
         <div className="mt-3 flex gap-2.5">
-          <Link
-            href="/search"
-            className="flex flex-1 items-center gap-2.5 rounded-[13px] border-[1.5px] border-line bg-surface px-3.5 py-3 text-sm text-muted"
-          >
-            <Search className="size-[18px]" aria-hidden />
-            Shops, cuisines, dishes…
-          </Link>
+          <SearchBox variant="bar" />
           <FilterSheet basePath="/" filters={filters} />
         </div>
         <div className="mt-3">
@@ -75,18 +72,16 @@ async function ProfileChip() {
     );
   }
   return (
-    <Link
-      href="/account"
-      aria-label="Your profile"
-      className="ml-auto flex size-[38px] items-center justify-center rounded-full bg-persimmon-200 font-display font-bold text-persimmon-700"
-    >
-      {(profile.display_name ?? profile.email).charAt(0).toUpperCase()}
+    <Link href="/account" aria-label="Your profile" className="ml-auto shrink-0">
+      <RoleAvatar role={profile.role} size={38} className="size-[38px]" />
     </Link>
   );
 }
 
 async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilters> }) {
-  const shops = await getFeedShops(filters);
+  const [shops, profile] = await Promise.all([getFeedShops(filters), getCurrentProfile()]);
+  // Admins and super-merchants can set any shop's cover image inline.
+  const canEdit = !!profile && (profile.role === "admin" || isSuperMerchant(profile.email));
 
   // Curated featured banners headline the carousel, followed by paid-featured
   // shops (or top-ranked "Top picks" as a fallback so it's never empty).
@@ -138,7 +133,7 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
       ) : (
         <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-7 lg:grid-cols-3">
           {rest.map((shop) => (
-            <ShopCard key={shop.business.slug} shop={shop} />
+            <ShopCard key={shop.business.slug} shop={shop} canEdit={canEdit} />
           ))}
         </div>
       )}

@@ -4,15 +4,13 @@ import { Suspense, useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, Phone } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { clientEnv } from "@/lib/env";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
 import { loginWithPhone, type LoginState } from "./actions";
 
 /**
- * Login: phone number, no verification (see ./actions). Google OAuth remains as
- * an alternative. Browsing Hungeri never requires auth; saving deals does.
+ * Login: phone number, no verification (see ./actions). Browsing Hungeri never
+ * requires auth; saving deals does.
  */
 export default function LoginPage() {
   // useSearchParams must live under a Suspense boundary for prerendering.
@@ -24,25 +22,15 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const supabase = createClient();
   const params = useSearchParams();
   // Empty when no explicit target: the phone action then routes by role
   // (admin → /admin, merchant → /dashboard, consumer → /).
   const requestedRedirect = params.get("redirect") ?? "";
-  const redirectTo = requestedRedirect || "/";
 
   const [state, formAction, pending] = useActionState<LoginState, FormData>(
     loginWithPhone,
     {},
   );
-
-  async function signInWithGoogle() {
-    const callback = `${clientEnv.NEXT_PUBLIC_SITE_URL}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: callback },
-    });
-  }
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6">
@@ -91,14 +79,6 @@ function LoginForm() {
         {state.error && (
           <p className="mt-3 text-center text-sm text-error">{state.error}</p>
         )}
-
-        <div className="my-5 flex items-center gap-3 text-xs font-semibold text-muted">
-          <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
-        </div>
-
-        <Button variant="outline" size="lg" onClick={signInWithGoogle} className="w-full">
-          Continue with Google
-        </Button>
 
         <div className="mt-6 text-center">
           <Link

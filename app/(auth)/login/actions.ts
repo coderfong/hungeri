@@ -62,7 +62,7 @@ export async function loginWithPhone(
     const { error: createErr } = await admin.auth.admin.createUser({
       email,
       email_confirm: true,
-      user_metadata: { display_name: `+${digits}`, phone: digits, role },
+      user_metadata: { display_name: digits, phone: digits, role },
     });
     if (createErr && !/exist|registered|already/i.test(createErr.message)) {
       return { error: createErr.message };

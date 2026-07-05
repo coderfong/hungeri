@@ -117,9 +117,10 @@ export function NearMeClient() {
   const center = loc ?? { ...SG_CENTER, label: "Singapore" };
 
   return (
-    <div className="md:flex md:h-[calc(100vh-65px)]">
-      {/* List panel (left on desktop, bottom sheet on mobile) */}
-      <aside className="order-2 flex flex-col border-line-soft bg-surface md:order-1 md:w-[380px] md:shrink-0 md:border-r">
+    <div className="flex flex-col md:flex-row md:h-[calc(100vh-65px)]">
+      {/* List panel: a rounded sheet overlapping the map on mobile; a left rail on desktop. */}
+      <aside className="relative z-10 order-2 -mt-4 flex flex-col rounded-t-3xl border-line-soft bg-surface shadow-[0_-8px_28px_rgba(0,0,0,0.08)] md:order-1 md:mt-0 md:w-[380px] md:shrink-0 md:rounded-none md:border-r md:shadow-none">
+        <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line md:hidden" aria-hidden />
         <div className="border-b border-line-soft px-5 py-4">
           <div className="flex items-center gap-2">
             <MapPin className="size-[18px] text-persimmon-500" aria-hidden />
@@ -162,7 +163,7 @@ export function NearMeClient() {
           </span>
         </div>
 
-        <div className="max-h-[40vh] flex-1 overflow-y-auto px-5 pb-24 md:max-h-none md:pb-5">
+        <div className="max-h-[48vh] flex-1 overflow-y-auto px-5 pb-24 md:max-h-none md:pb-5">
           {!loading && deals.length === 0 ? (
             <p className="rounded-card border border-dashed border-line px-4 py-8 text-center text-sm text-ink-500">
               No deals within {formatDistance(radius)} — try a wider radius.
@@ -184,7 +185,7 @@ export function NearMeClient() {
       </aside>
 
       {/* Map */}
-      <div className="relative order-1 h-[46vh] md:order-2 md:h-auto md:flex-1">
+      <div className="relative order-1 h-[42vh] md:order-2 md:h-auto md:flex-1">
         {token ? (
           <DealsMap
             deals={deals}
@@ -254,7 +255,7 @@ function PermissionPrompt({
   onManual: () => void;
 }) {
   return (
-    <div className="relative flex min-h-[calc(100vh-65px)] items-end justify-center bg-[#DDEAE2] p-5 md:items-center">
+    <div className="relative flex min-h-[calc(100vh-65px)] items-center justify-center bg-[#DDEAE2] p-5">
       <div className="w-full max-w-md rounded-3xl bg-surface p-6 text-center shadow-e2">
         <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-[20px] bg-persimmon-50">
           <MapPin className="size-8 text-persimmon-500" strokeWidth={2.2} aria-hidden />
