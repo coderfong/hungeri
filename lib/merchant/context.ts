@@ -41,6 +41,14 @@ export async function getMerchantContext(): Promise<MerchantContext> {
 
   const isSuper = isSuperMerchant(profile.email);
 
+  // Role gate: the dashboard is merchant-only. Anyone else who lands here (e.g.
+  // an admin or consumer who followed a /dashboard link, or was redirected to
+  // /login?redirect=/dashboard and signed in) is sent to their own home instead
+  // of being funneled into merchant onboarding.
+  if (profile.role !== "merchant" && !isSuper) {
+    redirect(profile.role === "admin" ? "/admin" : "/");
+  }
+
   if (isSuper) {
     const db = createAdminClient();
     const activeId = (await cookies()).get(ACTIVE_BUSINESS_COOKIE)?.value;
