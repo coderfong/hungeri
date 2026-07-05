@@ -321,5 +321,10 @@ export async function setActiveBusiness(formData: FormData): Promise<void> {
       maxAge: 60 * 60 * 24 * 30,
     });
   }
+  // The active business is read in the merchant LAYOUT (sidebar) and in every
+  // dashboard page, so without this the client router cache keeps serving the
+  // previously-managed business and the switch appears to do nothing. Revalidate
+  // the whole /dashboard layout subtree so the new selection takes effect.
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard");
 }
