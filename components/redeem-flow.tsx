@@ -110,13 +110,13 @@ export function RedeemFlow({ dealId }: { dealId: string }) {
       </Button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-ink-900/60" onClick={close} aria-hidden />
           <div
             role="dialog"
             aria-modal="true"
             aria-label="Scan to redeem"
-            className="relative w-full max-w-md rounded-t-[26px] bg-surface p-5 md:rounded-[20px]"
+            className="relative w-full max-w-md rounded-[20px] bg-surface p-5"
           >
             <div className="mb-3 flex items-center">
               <h2 className="font-display text-xl font-extrabold">Scan to redeem</h2>
