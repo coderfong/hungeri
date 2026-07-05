@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import type { FeaturedBanner } from "@/config/featured-banners";
 import { DealImage } from "@/components/deal-image";
+import { EditableShopImage } from "@/components/editable-shop-image";
 import { FeaturedLabel } from "@/components/ui/badges";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,13 @@ const AUTOPLAY_MS = 5000;
  * Big full-width banner carousel for the featured/spotlight listings — one large
  * banner at a time, auto-advancing, with swipe, prev/next arrows, and dots.
  */
-export function ShopCarousel({ banners }: { banners: FeaturedBanner[] }) {
+export function ShopCarousel({
+  banners,
+  canEdit = false,
+}: {
+  banners: FeaturedBanner[];
+  canEdit?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const count = banners.length;
@@ -66,7 +73,7 @@ export function ShopCarousel({ banners }: { banners: FeaturedBanner[] }) {
         className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto"
       >
         {banners.map((banner, i) => (
-          <ShopBanner key={banner.slug} banner={banner} priority={i === 0} />
+          <ShopBanner key={banner.slug} banner={banner} priority={i === 0} canEdit={canEdit} />
         ))}
       </div>
 
@@ -113,13 +120,25 @@ export function ShopCarousel({ banners }: { banners: FeaturedBanner[] }) {
 }
 
 /** One full-width banner slide. */
-function ShopBanner({ banner, priority }: { banner: FeaturedBanner; priority?: boolean }) {
-  const { name, image, href, external, verified, featured, deals, cuisine, savings } = banner;
+function ShopBanner({
+  banner,
+  priority,
+  canEdit,
+}: {
+  banner: FeaturedBanner;
+  priority?: boolean;
+  canEdit?: boolean;
+}) {
+  const { businessId, name, image, href, verified, featured, deals, cuisine, savings } = banner;
 
   const inner = (
     <>
-      <DealImage src={image} alt={name} priority={priority} sizes="(max-width: 768px) 100vw, 1100px" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+      {canEdit && businessId ? (
+        <EditableShopImage businessId={businessId} src={image} alt={name} />
+      ) : (
+        <DealImage src={image} alt={name} priority={priority} sizes="(max-width: 768px) 100vw, 1100px" />
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
       <span className="absolute left-4 top-4 md:left-6 md:top-6">
         {featured ? (
           <FeaturedLabel short />
@@ -158,15 +177,9 @@ function ShopBanner({ banner, priority }: { banner: FeaturedBanner; priority?: b
 
   return (
     <div className="w-full shrink-0 snap-center px-5 md:px-7">
-      {external ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-          {inner}
-        </a>
-      ) : (
-        <Link href={href} className={className}>
-          {inner}
-        </Link>
-      )}
+      <Link href={href} className={className}>
+        {inner}
+      </Link>
     </div>
   );
 }

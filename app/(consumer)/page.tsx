@@ -10,7 +10,7 @@ import { ShopCarousel } from "@/components/shop-carousel";
 import { Logo } from "@/components/logo";
 import { RoleAvatar } from "@/components/role-avatar";
 import { SearchBox } from "@/components/search-box";
-import { featuredBanners, type FeaturedBanner } from "@/config/featured-banners";
+import { type FeaturedBanner } from "@/config/featured-banners";
 import { savingsLabel } from "@/lib/deals/format";
 import { FeedSkeleton } from "@/components/feed-skeleton";
 import { QuickChips } from "@/components/filters/quick-chips";
@@ -95,16 +95,17 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
   // Admins and super-merchants can set any shop's cover image inline.
   const canEdit = !!profile && (profile.role === "admin" || isSuperMerchant(profile.email));
 
-  // Curated featured banners headline the carousel, followed by paid-featured
-  // shops (or top-ranked "Top picks" as a fallback so it's never empty).
+  // Spotlight = paid-featured shops, else the top-ranked "Top picks". Every
+  // slide is a real business linking to its own /b/[slug] page (searchable,
+  // and its cover is editable inline — no external mall-directory banners).
   const featured = shops.filter((s) => s.featured);
-  // The spotlight/top-picks carousel stays deal-driven — dealless shops only
-  // appear in the main grid below.
+  // The carousel stays deal-driven — dealless shops only appear in the grid.
   const picks = featured.length > 0 ? featured : shops.filter((s) => s.headline).slice(0, 6);
   const pickSlugs = new Set(picks.map((s) => s.business.slug));
   const rest = shops.filter((s) => !pickSlugs.has(s.business.slug));
 
-  const pickBanners: FeaturedBanner[] = picks.map((s) => ({
+  const carousel: FeaturedBanner[] = picks.map((s) => ({
+    businessId: s.business.id,
     slug: s.business.slug,
     name: s.business.name,
     image: s.business.cover_url ?? s.headline?.image_url ?? null,
@@ -115,7 +116,6 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
     cuisine: s.business.cuisine_tags[0] ?? null,
     savings: s.headline ? savingsLabel(s.headline) : null,
   }));
-  const carousel: FeaturedBanner[] = [...featuredBanners, ...pickBanners];
   const hasFeatured = carousel.some((b) => b.featured);
 
   return (
@@ -135,7 +135,7 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
               </span>
             )}
           </div>
-          <ShopCarousel banners={carousel} />
+          <ShopCarousel banners={carousel} canEdit={canEdit} />
         </section>
       )}
 
