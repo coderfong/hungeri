@@ -95,9 +95,65 @@
   display: none;
 }
 
-/* Respect reduced-motion for the shimmer + transitions. */
+/* ── Stylised flourishes ─────────────────────────────────────────────────── */
+
+/* Warm layered hero backdrop (glow + brand diagonal weave). */
+.hero-mesh {
+  background:
+    radial-gradient(90% 120% at 0% 0%, #ffd9c6 0%, transparent 55%),
+    radial-gradient(80% 120% at 100% 0%, #ffe7d8 0%, transparent 52%),
+    linear-gradient(180deg, #fff3ec 0%, var(--color-bg) 100%);
+}
+
+/* Punchy two-stop persimmon gradient text for headlines. */
+.text-gradient-persimmon {
+  background: linear-gradient(96deg, var(--color-persimmon-600), var(--color-persimmon-400) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Richer empty-image placeholder: soft glow over the brand diagonal weave. */
+.img-placeholder {
+  background:
+    radial-gradient(120% 130% at 12% -10%, #ffe9dc 0%, transparent 58%),
+    repeating-linear-gradient(135deg, #ffe3d2 0 12px, #ffede2 12px 24px);
+}
+
+/* Gentle rise-in for feed cards. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Slow ambient drift for decorative blobs. */
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6px, -10px) scale(1.05);
+  }
+}
+.animate-drift {
+  animation: drift 9s ease-in-out infinite;
+}
+
+/* Respect reduced-motion for every animation + transition here. */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton {
+  .skeleton,
+  .animate-rise,
+  .animate-drift {
     animation: none;
   }
 }

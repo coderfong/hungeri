@@ -30,13 +30,5 @@ export function DealImage({
       />
     );
   }
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        "size-full bg-[repeating-linear-gradient(135deg,#FFE3D2_0_12px,#FFEDE2_12px_24px)]",
-        className,
-      )}
-    />
-  );
+  return <div aria-hidden className={cn("img-placeholder size-full", className)} />;
 }

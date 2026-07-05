@@ -27,26 +27,38 @@ export default async function FeedPage({
   return (
     <main className="mx-auto w-full max-w-6xl">
       {/* Mobile header (desktop uses the shared TopBar) */}
-      <div className="px-5 pt-4 md:hidden">
-        <div className="flex items-center gap-2.5">
-          <Logo size="sm" withWordmark={false} />
-          <Link href="/near-me" className="flex items-center gap-1.5 font-extrabold">
-            <MapPin className="size-[18px] text-persimmon-500" strokeWidth={2.4} aria-hidden />
-            Singapore
-            <ChevronDown className="size-4 text-muted" aria-hidden />
-          </Link>
-          <Suspense>
-            <ProfileChip />
-          </Suspense>
+      <header className="relative overflow-hidden md:hidden">
+        <span
+          aria-hidden
+          className="animate-drift pointer-events-none absolute -right-10 -top-12 size-44 rounded-full bg-persimmon-300/25 blur-3xl"
+        />
+        <div className="hero-mesh relative rounded-b-[26px] px-5 pb-4 pt-4 shadow-[0_10px_30px_-18px_rgba(255,90,31,0.5)]">
+          <div className="flex items-center gap-2.5">
+            <Logo size="sm" withWordmark={false} />
+            <Link href="/near-me" className="flex items-center gap-1.5 font-extrabold">
+              <MapPin className="size-[18px] text-persimmon-500" strokeWidth={2.4} aria-hidden />
+              Singapore
+              <ChevronDown className="size-4 text-muted" aria-hidden />
+            </Link>
+            <Suspense>
+              <ProfileChip />
+            </Suspense>
+          </div>
+          <h1 className="mt-3.5 font-display text-[25px] font-extrabold leading-[1.08] tracking-tight">
+            Great food, <span className="text-gradient-persimmon">unbeatable deals</span>
+          </h1>
+          <p className="mt-1 text-[13px] font-semibold text-ink-500">
+            Fresh drops near you — grab them before they&apos;re gone.
+          </p>
+          <div className="mt-3.5 flex gap-2.5">
+            <SearchBox variant="bar" />
+            <FilterSheet basePath="/" filters={filters} />
+          </div>
         </div>
-        <div className="mt-3 flex gap-2.5">
-          <SearchBox variant="bar" />
-          <FilterSheet basePath="/" filters={filters} />
-        </div>
-        <div className="mt-3">
+        <div className="px-5 pb-1 pt-3">
           <QuickChips basePath="/" filters={filters} />
         </div>
-      </div>
+      </header>
 
       <div className="hidden items-center gap-3 px-7 pt-6 md:flex">
         <QuickChips basePath="/" filters={filters} />
@@ -109,23 +121,33 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
   return (
     <div className="pb-8 pt-4">
       {carousel.length > 0 && (
-        <section className="mb-5">
-          <div className="mb-2.5 flex items-center gap-1.5 px-5 md:px-7">
-            <Sparkles className="size-4 text-ad-text" aria-hidden />
-            <h2 className="font-display text-base font-bold">
+        <section className="mb-6">
+          <div className="mb-3 flex items-center gap-2 px-5 md:px-7">
+            <span className="flex size-6 items-center justify-center rounded-lg bg-ad-bg">
+              <Sparkles className="size-3.5 text-ad-text" aria-hidden />
+            </span>
+            <h2 className="font-display text-lg font-extrabold tracking-tight">
               {hasFeatured ? "Spotlight near you" : "Top picks near you"}
             </h2>
             {hasFeatured && (
-              <span className="ml-auto text-[11px] font-bold text-muted">Featured · Ad</span>
+              <span className="ml-auto rounded-pill bg-ad-bg px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-ad-text">
+                Featured · Ad
+              </span>
             )}
           </div>
           <ShopCarousel banners={carousel} />
         </section>
       )}
 
-      <div className="mb-3 flex items-baseline justify-between px-5 md:px-7">
-        <h2 className="font-display text-[17px] font-bold">Shops near you</h2>
-        <span className="text-xs font-bold text-muted">{shops.length} shops</span>
+      <div className="mb-3.5 flex items-center gap-2.5 px-5 md:px-7">
+        <span
+          aria-hidden
+          className="h-6 w-1.5 rounded-full bg-gradient-to-b from-persimmon-400 to-persimmon-600"
+        />
+        <h2 className="font-display text-xl font-extrabold tracking-tight">Shops near you</h2>
+        <span className="ml-auto rounded-pill bg-line-soft px-2.5 py-1 text-[11px] font-extrabold text-ink-500">
+          {shops.length} shops
+        </span>
       </div>
 
       {rest.length === 0 ? (
@@ -134,8 +156,14 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-7 lg:grid-cols-3">
-          {rest.map((shop) => (
-            <ShopCard key={shop.business.slug} shop={shop} canEdit={canEdit} />
+          {rest.map((shop, i) => (
+            <div
+              key={shop.business.slug}
+              className="animate-rise"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
+            >
+              <ShopCard shop={shop} canEdit={canEdit} />
+            </div>
           ))}
         </div>
       )}

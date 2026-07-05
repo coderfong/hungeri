@@ -4,7 +4,7 @@ import type { ShopListing } from "@/lib/deals/query";
 import { dealBadge, savingsLabel } from "@/lib/deals/format";
 import { DealImage } from "@/components/deal-image";
 import { EditableShopImage } from "@/components/editable-shop-image";
-import { DealTypeBadge, SavingsBadge, PriceLevel, FeaturedLabel } from "@/components/ui/badges";
+import { DealTypeBadge, PriceLevel, FeaturedLabel } from "@/components/ui/badges";
 
 /** Small "N deals" detail shown beside the shop name. */
 function DealCountTag({ count }: { count: number }) {
@@ -23,41 +23,48 @@ export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit
   return (
     <Link
       href={`/b/${biz.slug}`}
-      className="block overflow-hidden rounded-card-lg border border-line-soft bg-surface shadow-card transition-shadow hover:shadow-e2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100"
+      className="group block overflow-hidden rounded-card-lg border border-line-soft bg-surface shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-persimmon-200 hover:shadow-e2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100"
     >
-      <div className="relative h-[150px]">
+      <div className="relative h-[160px] overflow-hidden">
         {canEdit ? (
           <EditableShopImage businessId={biz.id} src={biz.cover_url} alt={biz.name} />
         ) : (
-          <DealImage src={biz.cover_url} alt={biz.name} />
+          <DealImage
+            src={biz.cover_url}
+            alt={biz.name}
+            className="transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+          />
         )}
+        {/* legibility + depth wash */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-900/45 via-ink-900/5 to-transparent" />
         {headline && (
           <span className="absolute left-3 top-3">
             <DealTypeBadge label={dealBadge(headline)} />
           </span>
         )}
+        {savings && (
+          <span className="absolute right-3 top-3 rounded-pill bg-savings px-2.5 py-1 text-[11px] font-extrabold text-white shadow-e1">
+            {savings}
+          </span>
+        )}
+        {/* Shop name reads over the image for a bolder, editorial feel */}
+        <h3 className="absolute inset-x-3.5 bottom-2.5 flex items-center gap-1.5 font-display text-[21px] font-extrabold leading-none tracking-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">
+          <span className="truncate">{biz.name}</span>
+          {biz.verified && <BadgeCheck className="size-[18px] shrink-0" aria-hidden />}
+        </h3>
       </div>
-      <div className="p-[15px]">
-        {/* Shop name is the main header; deal count sits to the side */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="flex min-w-0 items-center gap-1.5 font-display text-[20px] font-extrabold leading-tight tracking-tight">
-            <span className="truncate">{biz.name}</span>
-            {biz.verified && <BadgeCheck className="size-[18px] shrink-0 text-persimmon-500" aria-hidden />}
-          </h3>
+      <div className="flex items-center gap-2 p-3.5 text-xs font-semibold text-muted">
+        {biz.cuisine_tags[0] && <span className="text-ink-700">{biz.cuisine_tags[0]}</span>}
+        <PriceLevel level={biz.price_level} />
+        <span className="ml-auto">
           {dealCount > 0 ? (
             <DealCountTag count={dealCount} />
           ) : (
-            <span className="inline-flex shrink-0 items-center rounded-pill bg-line-soft px-2.5 py-1 text-[11px] font-extrabold text-muted">
-              No deals yet
+            <span className="inline-flex items-center rounded-pill bg-line-soft px-2.5 py-1 text-[11px] font-extrabold text-muted">
+              New shop
             </span>
           )}
-        </div>
-        {/* Secondary line: cuisine · price · best saving */}
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
-          {biz.cuisine_tags[0] && <span>{biz.cuisine_tags[0]}</span>}
-          <PriceLevel level={biz.price_level} />
-          {savings && <SavingsBadge className="ml-auto px-2 py-0.5 text-[11px]">{savings}</SavingsBadge>}
-        </div>
+        </span>
       </div>
     </Link>
   );
