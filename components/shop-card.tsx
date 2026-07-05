@@ -19,7 +19,7 @@ function DealCountTag({ count }: { count: number }) {
 /** Standard shop listing card — the SHOP is the headline; deals are a side detail. */
 export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit?: boolean }) {
   const { business: biz, headline, dealCount } = shop;
-  const savings = savingsLabel(headline);
+  const savings = headline ? savingsLabel(headline) : null;
   return (
     <Link
       href={`/b/${biz.slug}`}
@@ -27,13 +27,15 @@ export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit
     >
       <div className="relative h-[150px]">
         {canEdit ? (
-          <EditableShopImage dealId={headline.id} src={headline.image_url} alt={biz.name} />
+          <EditableShopImage businessId={biz.id} src={biz.cover_url} alt={biz.name} />
         ) : (
-          <DealImage src={headline.image_url} alt={biz.name} />
+          <DealImage src={biz.cover_url} alt={biz.name} />
         )}
-        <span className="absolute left-3 top-3">
-          <DealTypeBadge label={dealBadge(headline)} />
-        </span>
+        {headline && (
+          <span className="absolute left-3 top-3">
+            <DealTypeBadge label={dealBadge(headline)} />
+          </span>
+        )}
       </div>
       <div className="p-[15px]">
         {/* Shop name is the main header; deal count sits to the side */}
@@ -42,7 +44,13 @@ export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit
             <span className="truncate">{biz.name}</span>
             {biz.verified && <BadgeCheck className="size-[18px] shrink-0 text-persimmon-500" aria-hidden />}
           </h3>
-          <DealCountTag count={dealCount} />
+          {dealCount > 0 ? (
+            <DealCountTag count={dealCount} />
+          ) : (
+            <span className="inline-flex shrink-0 items-center rounded-pill bg-line-soft px-2.5 py-1 text-[11px] font-extrabold text-muted">
+              No deals yet
+            </span>
+          )}
         </div>
         {/* Secondary line: cuisine · price · best saving */}
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
@@ -58,14 +66,14 @@ export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit
 /** Large carousel slide — shop name headlines; deals are a small detail line. */
 export function ShopHeroCard({ shop }: { shop: ShopListing }) {
   const { business: biz, headline, dealCount, featured } = shop;
-  const savings = savingsLabel(headline);
+  const savings = headline ? savingsLabel(headline) : null;
   return (
     <Link
       href={`/b/${biz.slug}`}
       className="block w-[300px] shrink-0 snap-start overflow-hidden rounded-card-lg border-[1.5px] border-ad-border bg-surface shadow-e3 sm:w-[360px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100"
     >
       <div className="relative h-[190px]">
-        <DealImage src={headline.image_url} alt={biz.name} priority />
+        <DealImage src={biz.cover_url ?? headline?.image_url ?? null} alt={biz.name} priority />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
         <span className="absolute left-3 top-3">
           {featured ? (

@@ -5,20 +5,20 @@ import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DealImage } from "@/components/deal-image";
-import { setShopHeadlineImage } from "@/lib/admin/shop-image";
+import { setShopCover } from "@/lib/admin/shop-image";
 
 /**
  * Shop cover image with an inline uploader for admins / super-merchants.
- * Drag a photo onto it (or tap "Add photo") to set the shop's headline image.
- * Lives inside the card's <Link>, so every interactive handler stops the click
- * from navigating.
+ * Drag a photo onto it (or tap "Add photo") to set the shop's cover image
+ * (business-level — it does not touch individual deal images). Lives inside the
+ * card's <Link>, so every interactive handler stops the click from navigating.
  */
 export function EditableShopImage({
-  dealId,
+  businessId,
   src,
   alt,
 }: {
-  dealId: string;
+  businessId: string;
   src: string | null;
   alt: string;
 }) {
@@ -46,7 +46,7 @@ export function EditableShopImage({
         .upload(path, file, { upsert: true, cacheControl: "3600" });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("deal-images").getPublicUrl(path);
-      const res = await setShopHeadlineImage(dealId, data.publicUrl);
+      const res = await setShopCover(businessId, data.publicUrl);
       if (!res.ok) throw new Error(res.error ?? "Could not save the image.");
       router.refresh();
     } catch (e) {

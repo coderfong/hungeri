@@ -35,11 +35,13 @@ export async function getBusinessBySlug(slug: string): Promise<BusinessProfile |
     deals: ((deals ?? []) as unknown as FeedDeal[]).map((d) => ({
       ...d,
       businesses: {
+        id: row.id,
         name: row.name,
         slug: row.slug,
         price_level: row.price_level,
         cuisine_tags: row.cuisine_tags,
         logo_url: row.logo_url,
+        cover_url: row.cover_url ?? null,
         verified: row.verified,
       },
       featured: false,

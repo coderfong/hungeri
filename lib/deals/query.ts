@@ -13,11 +13,14 @@ import { rankDeals, type GeoScope } from "@/lib/ranking";
  */
 
 export type FeedBusiness = {
+  id: string;
   name: string;
   slug: string;
   price_level: number | null;
   cuisine_tags: string[];
   logo_url: string | null;
+  /** Shop-level cover image (separate from any individual deal's image). */
+  cover_url: string | null;
   verified: boolean;
 };
 
@@ -56,7 +59,7 @@ export type DealFilters = {
 
 const FEED_SELECT =
   "id, title, description, deal_type, discount_value, image_url, channels, dietary_tags, start_at, end_at, created_at, " +
-  "businesses!inner(name, slug, price_level, cuisine_tags, logo_url, verified, status), " +
+  "businesses!inner(id, name, slug, price_level, cuisine_tags, logo_url, cover_url, verified, status), " +
   "featured_placements(tier, status, start_at, end_at)";
 
 const DAY_MS = 86_400_000;
@@ -96,11 +99,13 @@ function toFeedDeal(row: RawRow): FeedDeal {
     created_at: row.created_at as string,
     businesses: biz
       ? {
+          id: biz.id,
           name: biz.name,
           slug: biz.slug,
           price_level: biz.price_level,
           cuisine_tags: biz.cuisine_tags ?? [],
           logo_url: biz.logo_url,
+          cover_url: biz.cover_url ?? null,
           verified: biz.verified,
         }
       : null,
@@ -187,10 +192,27 @@ export async function getSpotlightDeals(limit = 5): Promise<FeedDeal[]> {
  */
 export type ShopListing = {
   business: FeedBusiness;
-  headline: FeedDeal;
+  /** Top-ranked live deal, or null for a live shop that has no deals yet. */
+  headline: FeedDeal | null;
   dealCount: number;
   featured: boolean;
 };
+
+const SHOP_SELECT = "id, name, slug, price_level, cuisine_tags, logo_url, cover_url, verified";
+
+/** Any active facet means the feed is deal-driven; dealless shops don't apply. */
+function hasAnyFilter(f: DealFilters): boolean {
+  return !!(
+    f.q ||
+    f.cuisine?.length ||
+    f.dealType?.length ||
+    f.priceLevel?.length ||
+    f.channel?.length ||
+    f.dietary?.length ||
+    f.endingSoon ||
+    f.newToday
+  );
+}
 
 export async function getFeedShops(filters: DealFilters = {}): Promise<ShopListing[]> {
   const deals = await getFeedDeals({ ...filters, limit: filters.limit ?? 120 });
@@ -206,5 +228,22 @@ export async function getFeedShops(filters: DealFilters = {}): Promise<ShopListi
       existing.featured = existing.featured || d.featured;
     }
   }
+
+  // Include live shops that have no live deals so every merchant is discoverable.
+  // Only on the unfiltered feed — filtered views are inherently deal-driven.
+  if (!hasAnyFilter(filters)) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("businesses").select(SHOP_SELECT).eq("status", "live");
+    for (const b of (data ?? []) as FeedBusiness[]) {
+      if (byShop.has(b.slug)) continue;
+      byShop.set(b.slug, {
+        business: { ...b, cover_url: b.cover_url ?? null, cuisine_tags: b.cuisine_tags ?? [] },
+        headline: null,
+        dealCount: 0,
+        featured: false,
+      });
+    }
+  }
+
   return [...byShop.values()];
 }

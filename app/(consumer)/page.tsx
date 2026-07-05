@@ -86,20 +86,22 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
   // Curated featured banners headline the carousel, followed by paid-featured
   // shops (or top-ranked "Top picks" as a fallback so it's never empty).
   const featured = shops.filter((s) => s.featured);
-  const picks = featured.length > 0 ? featured : shops.slice(0, 6);
+  // The spotlight/top-picks carousel stays deal-driven — dealless shops only
+  // appear in the main grid below.
+  const picks = featured.length > 0 ? featured : shops.filter((s) => s.headline).slice(0, 6);
   const pickSlugs = new Set(picks.map((s) => s.business.slug));
   const rest = shops.filter((s) => !pickSlugs.has(s.business.slug));
 
   const pickBanners: FeaturedBanner[] = picks.map((s) => ({
     slug: s.business.slug,
     name: s.business.name,
-    image: s.headline.image_url,
+    image: s.business.cover_url ?? s.headline?.image_url ?? null,
     href: `/b/${s.business.slug}`,
     verified: s.business.verified,
     featured: s.featured,
     deals: s.dealCount,
     cuisine: s.business.cuisine_tags[0] ?? null,
-    savings: savingsLabel(s.headline),
+    savings: s.headline ? savingsLabel(s.headline) : null,
   }));
   const carousel: FeaturedBanner[] = [...featuredBanners, ...pickBanners];
   const hasFeatured = carousel.some((b) => b.featured);
