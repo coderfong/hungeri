@@ -5,7 +5,14 @@ import { dealBadge, savingsLabel } from "@/lib/deals/format";
 import { DealImage } from "@/components/deal-image";
 import { EditableShopImage } from "@/components/editable-shop-image";
 import { SpotlightToggle } from "@/components/spotlight-toggle";
-import { DealTypeBadge, PriceLevel, FeaturedLabel } from "@/components/ui/badges";
+import { cn } from "@/lib/utils";
+import {
+  DealTypeBadge,
+  PriceLevel,
+  FeaturedLabel,
+  FeaturedRibbon,
+  featuredFrame,
+} from "@/components/ui/badges";
 
 /** Small "N deals" detail shown beside the shop name. */
 function DealCountTag({ count }: { count: number }) {
@@ -17,14 +24,20 @@ function DealCountTag({ count }: { count: number }) {
   );
 }
 
-/** Standard shop listing card — the SHOP is the headline; deals are a side detail. */
+/** Standard shop listing card — the SHOP is the headline; deals are a side detail.
+ *  Paid-featured shops get a gold frame + ribbon so they never blend in. */
 export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit?: boolean }) {
-  const { business: biz, headline, dealCount } = shop;
+  const { business: biz, headline, dealCount, featured } = shop;
   const savings = headline ? savingsLabel(headline) : null;
-  return (
+  const card = (
     <Link
       href={`/b/${biz.slug}`}
-      className="group block overflow-hidden rounded-card-lg border border-line-soft bg-surface shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-persimmon-200 hover:shadow-e2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100"
+      className={cn(
+        "group block overflow-hidden bg-surface transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100",
+        featured
+          ? "rounded-b-[18px]"
+          : "rounded-card-lg border border-line-soft shadow-card hover:-translate-y-1 hover:border-persimmon-200 hover:shadow-e2",
+      )}
     >
       <div className="relative h-[160px] overflow-hidden">
         {canEdit ? (
@@ -69,6 +82,14 @@ export function ShopCard({ shop, canEdit = false }: { shop: ShopListing; canEdit
         </span>
       </div>
     </Link>
+  );
+
+  if (!featured) return card;
+  return (
+    <div className={cn("rounded-card-lg", featuredFrame)}>
+      <FeaturedRibbon className="rounded-t-[15px]" />
+      {card}
+    </div>
   );
 }
 

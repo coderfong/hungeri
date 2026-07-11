@@ -7,7 +7,7 @@ import type { FeaturedBanner } from "@/config/featured-banners";
 import { DealImage } from "@/components/deal-image";
 import { EditableShopImage } from "@/components/editable-shop-image";
 import { SpotlightToggle } from "@/components/spotlight-toggle";
-import { FeaturedLabel } from "@/components/ui/badges";
+import { FeaturedRibbon, featuredFrame } from "@/components/ui/badges";
 import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 5000;
@@ -141,19 +141,19 @@ function ShopBanner({
         <DealImage src={image} alt={name} priority={priority} sizes="(max-width: 768px) 100vw, 1100px" />
       )}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-      <span className="absolute left-4 top-4 md:left-6 md:top-6">
-        {featured ? (
-          <FeaturedLabel short />
-        ) : spotlight ? (
-          <span className="inline-flex items-center gap-1 rounded-[9px] bg-persimmon-500 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-white shadow-e1">
-            <Sparkles className="size-3.5" aria-hidden /> Spotlight
-          </span>
-        ) : (
-          <span className="rounded-[9px] bg-ink-900/80 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-white backdrop-blur">
-            Top pick
-          </span>
-        )}
-      </span>
+      {!featured && (
+        <span className="absolute left-4 top-4 md:left-6 md:top-6">
+          {spotlight ? (
+            <span className="inline-flex items-center gap-1 rounded-[9px] bg-persimmon-500 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-white shadow-e1">
+              <Sparkles className="size-3.5" aria-hidden /> Spotlight
+            </span>
+          ) : (
+            <span className="rounded-[9px] bg-ink-900/80 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-white backdrop-blur">
+              Top pick
+            </span>
+          )}
+        </span>
+      )}
       {canEdit && businessId && (
         <span className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
           <SpotlightToggle businessId={businessId} active={!!spotlight} />
@@ -183,14 +183,29 @@ function ShopBanner({
     </>
   );
 
-  const className =
-    "relative block h-[190px] overflow-hidden rounded-card-lg border-[1.5px] border-ad-border bg-surface shadow-e3 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100 sm:h-[260px] md:h-[320px]";
+  // Paid-featured slides carry a gold gradient frame + full-width ribbon so
+  // they can't be mistaken for organic slides; organic slides stay neutral.
+  const className = cn(
+    "relative block h-[190px] overflow-hidden bg-surface focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100 sm:h-[260px] md:h-[320px]",
+    featured
+      ? "rounded-[18px]"
+      : "rounded-card-lg border-[1.5px] border-line-soft shadow-card",
+  );
 
   return (
     <div className="w-full shrink-0 snap-center px-5 md:px-7">
-      <Link href={href} className={className}>
-        {inner}
-      </Link>
+      {featured ? (
+        <div className={cn("rounded-[22px]", featuredFrame)}>
+          <FeaturedRibbon className="rounded-t-[19px]" />
+          <Link href={href} className={cn(className, "rounded-t-none")}>
+            {inner}
+          </Link>
+        </div>
+      ) : (
+        <Link href={href} className={className}>
+          {inner}
+        </Link>
+      )}
     </div>
   );
 }

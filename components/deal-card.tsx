@@ -16,6 +16,8 @@ import {
   NewTodayBadge,
   PriceLevel,
   FeaturedLabel,
+  FeaturedRibbon,
+  featuredFrame,
   Tag,
 } from "@/components/ui/badges";
 
@@ -39,14 +41,19 @@ type CardProps = {
   isAuthed: boolean;
 };
 
-/** A · Standard feed card. */
+/** A · Standard feed card. Paid-featured deals get a gold frame + ribbon. */
 export function StandardDealCard({ deal, saved, isAuthed }: CardProps) {
   const biz = deal.businesses;
   const savings = savingsLabel(deal);
-  return (
+  const card = (
     <Link
       href={`/deals/${deal.id}`}
-      className="block overflow-hidden rounded-card-lg border border-line-soft bg-surface shadow-card transition-shadow hover:shadow-e2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100"
+      className={cn(
+        "block overflow-hidden bg-surface transition-shadow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-persimmon-100",
+        deal.featured
+          ? "rounded-b-[18px]"
+          : "rounded-card-lg border border-line-soft shadow-card hover:shadow-e2",
+      )}
     >
       <div className="relative h-[158px]">
         <DealImage src={deal.image_url} alt={deal.title} />
@@ -91,6 +98,14 @@ export function StandardDealCard({ deal, saved, isAuthed }: CardProps) {
         </div>
       </div>
     </Link>
+  );
+
+  if (!deal.featured) return card;
+  return (
+    <div className={cn("rounded-card-lg", featuredFrame)}>
+      <FeaturedRibbon className="rounded-t-[15px]" />
+      {card}
+    </div>
   );
 }
 

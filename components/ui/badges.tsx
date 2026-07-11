@@ -28,6 +28,30 @@ export function FeaturedLabel({
   );
 }
 
+/**
+ * Full-width gold ribbon across the top of a paid listing. Paired with
+ * `featuredFrame` so featured cards read unmistakably different from organic
+ * listings while staying clearly disclosed.
+ */
+export function FeaturedRibbon({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-center gap-1.5 bg-gradient-to-r from-ad-border via-ad-bg to-ad-border px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ad-text",
+        className,
+      )}
+    >
+      <Star className="size-3" fill="currentColor" aria-hidden />
+      Featured · Ad
+      <Star className="size-3" fill="currentColor" aria-hidden />
+    </div>
+  );
+}
+
+/** Gold gradient frame classes for a featured listing's wrapper element. */
+export const featuredFrame =
+  "bg-gradient-to-br from-[#EDD584] via-[#F7EBBE] to-[#EDD584] p-[3px] shadow-[0_12px_30px_rgba(203,164,54,0.3)]";
+
 /** Solid persimmon offer badge, e.g. "1-FOR-1" / "30% OFF". */
 export function DealTypeBadge({
   label,
