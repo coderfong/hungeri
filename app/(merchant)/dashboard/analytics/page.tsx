@@ -19,9 +19,9 @@ export default async function AnalyticsPage() {
       <p className="mt-1 text-sm text-ink-500">{business.name} · all-time</p>
 
       <div className="my-6 grid grid-cols-3 gap-4">
-        <StatCard icon={Eye} label="Views" value={stats.totalViews.toLocaleString()} />
-        <StatCard icon={Heart} label="Saves" value={stats.totalSaves.toLocaleString()} />
-        <StatCard icon={TicketCheck} label="Redemptions" value={stats.totalRedemptions.toLocaleString()} />
+        <StatCard icon={Eye} label="Views" value={stats.totalViews.toLocaleString()} tone="brand" />
+        <StatCard icon={Heart} label="Saves" value={stats.totalSaves.toLocaleString()} tone="urgent" />
+        <StatCard icon={TicketCheck} label="Redemptions" value={stats.totalRedemptions.toLocaleString()} tone="savings" />
       </div>
 
       <h2 className="mb-3 font-display text-lg font-bold">Per-deal performance</h2>

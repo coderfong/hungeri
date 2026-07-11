@@ -134,6 +134,7 @@ export interface Database {
           lng: number;
           geog: unknown;
           phone: string | null;
+          photo_url: string | null;
           opening_hours: Json | null;
         } & Timestamps;
         Insert: {
@@ -145,6 +146,7 @@ export interface Database {
           lat: number;
           lng: number;
           phone?: string | null;
+          photo_url?: string | null;
           opening_hours?: Json | null;
           created_at?: string;
         };

@@ -59,7 +59,7 @@ export function PlacementsManager({
   return (
     <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
       <div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {TIER_ORDER.map((t) => {
             const spec = TIERS[t];
             const Icon = TIER_ICON[t];

@@ -77,16 +77,22 @@ export default async function BusinessPage({
         </Link>
       </div>
 
-      <div className="relative -mt-9 px-5">
+      <div className="px-5">
+        {/* Only the avatar overlaps the cover; the name stays below it so long
+            names never climb into the image. */}
         <div className="mb-3.5 flex items-end gap-3">
-          <div className="flex size-[72px] items-center justify-center rounded-[20px] border-4 border-bg bg-ink-900 font-display text-[28px] font-extrabold text-white">
-            {biz.logo_url ? "" : biz.name.charAt(0)}
+          <div className="relative -mt-9 flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-[20px] border-4 border-bg bg-ink-900 font-display text-[28px] font-extrabold text-white">
+            {biz.logo_url ? (
+              <DealImage src={biz.logo_url} alt={`${biz.name} logo`} sizes="72px" />
+            ) : (
+              biz.name.charAt(0)
+            )}
           </div>
-          <div className="mb-1">
+          <div className="mb-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h1 className="font-display text-[22px] font-extrabold">{biz.name}</h1>
+              <h1 className="font-display text-[22px] font-extrabold leading-tight">{biz.name}</h1>
               {biz.verified && (
-                <BadgeCheck className="size-[18px] text-persimmon-500" aria-hidden />
+                <BadgeCheck className="size-[18px] shrink-0 text-persimmon-500" aria-hidden />
               )}
             </div>
             <div className="flex items-center gap-1.5 text-xs font-semibold text-muted">
@@ -102,16 +108,39 @@ export default async function BusinessPage({
           </p>
         )}
 
-        {biz.locations[0] && (
-          <a
-            href={`https://www.google.com/maps/dir/?api=1&destination=${biz.locations[0].lat},${biz.locations[0].lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mb-6 inline-flex items-center gap-2 rounded-btn border-[1.5px] border-line bg-surface px-4 py-2.5 text-sm font-bold hover:border-ink-300"
-          >
-            <Navigation className="size-[15px]" aria-hidden />
-            Directions · {biz.locations.length} outlet{biz.locations.length > 1 ? "s" : ""}
-          </a>
+        {biz.locations.length > 0 && (
+          <div className="mb-6">
+            <h2 className="mb-2 font-display text-[17px] font-bold">
+              Outlet{biz.locations.length > 1 ? "s" : ""}
+            </h2>
+            <div className="space-y-2">
+              {biz.locations.map((loc) => (
+                <div
+                  key={loc.id}
+                  className="flex items-center gap-3 rounded-card border border-line-soft bg-surface p-3"
+                >
+                  <div className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-persimmon-50">
+                    <DealImage src={loc.photo_url} alt={loc.address ?? "Outlet"} sizes="48px" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold">{loc.address ?? "Outlet"}</div>
+                    {loc.postal_code && (
+                      <div className="text-xs text-muted">S{loc.postal_code}</div>
+                    )}
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-btn border-[1.5px] border-line bg-surface px-3 py-2 text-xs font-bold hover:border-ink-300"
+                  >
+                    <Navigation className="size-3.5" aria-hidden />
+                    Directions
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mb-3 flex items-center gap-2">

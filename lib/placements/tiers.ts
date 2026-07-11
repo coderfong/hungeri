@@ -21,7 +21,7 @@ export const TIERS: Record<PlacementTier, TierSpec> = {
     name: "Boosted",
     radiusM: 1000,
     durationHours: 48,
-    priceCents: 2900,
+    priceCents: 2000,
     blurb: "Lifts your deal higher in the feed near you.",
   },
   featured: {
@@ -29,10 +29,12 @@ export const TIERS: Record<PlacementTier, TierSpec> = {
     name: "Featured",
     radiusM: 3000,
     durationHours: 168,
-    priceCents: 7900,
-    blurb: 'Labelled "Featured · Ad" card in feed & search.',
+    priceCents: 5000,
+    blurb: "Top hero strip on Home — first thing diners see.",
     recommended: true,
   },
+  // Retired tier — kept so existing placements still render; not purchasable
+  // (absent from TIER_ORDER).
   spotlight: {
     tier: "spotlight",
     name: "Spotlight",
@@ -43,4 +45,4 @@ export const TIERS: Record<PlacementTier, TierSpec> = {
   },
 };
 
-export const TIER_ORDER: PlacementTier[] = ["boosted", "featured", "spotlight"];
+export const TIER_ORDER: PlacementTier[] = ["boosted", "featured"];

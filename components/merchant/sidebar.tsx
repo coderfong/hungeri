@@ -17,14 +17,15 @@ import { cn } from "@/lib/utils";
 import { setActiveBusiness } from "@/lib/merchant/actions";
 import { LogoMark } from "@/components/logo";
 
+// Each section gets its own icon colour so pages are easy to tell apart.
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/deals", label: "Deals", icon: Tag },
-  { href: "/dashboard/placements", label: "Placements", icon: Megaphone },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/outlets", label: "Outlets", icon: Store },
-  { href: "/dashboard/qr", label: "QR code", icon: QrCode },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true, color: "text-persimmon-300" },
+  { href: "/dashboard/deals", label: "Deals", icon: Tag, color: "text-[#5ecf8f]" },
+  { href: "/dashboard/placements", label: "Placements", icon: Megaphone, color: "text-[#f0c95c]" },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, color: "text-[#7fb5ff]" },
+  { href: "/dashboard/outlets", label: "Outlets", icon: Store, color: "text-[#c99bff]" },
+  { href: "/dashboard/qr", label: "QR code", icon: QrCode, color: "text-[#ff9db5]" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, color: "text-ink-300" },
 ];
 
 export type SidebarBusiness = {
@@ -90,7 +91,7 @@ export function MerchantSidebar({
           <span className="font-display text-lg font-extrabold">Hungeri</span>
         </Link>
         <nav className="flex flex-col gap-1">
-          {NAV.map(({ href, label, icon: Icon, exact }) => {
+          {NAV.map(({ href, label, icon: Icon, exact, color }) => {
             const active = isActive(pathname, href, exact);
             return (
               <Link
@@ -101,7 +102,7 @@ export function MerchantSidebar({
                   active ? "bg-[#33271F] text-white" : "text-ink-300 hover:text-white",
                 )}
               >
-                <Icon className={cn("size-[19px]", active && "text-persimmon-300")} aria-hidden />
+                <Icon className={cn("size-[19px]", color)} aria-hidden />
                 {label}
               </Link>
             );
@@ -175,7 +176,7 @@ export function MerchantSidebar({
           )}
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto px-3 pb-2">
-          {NAV.map(({ href, label, icon: Icon, exact }) => {
+          {NAV.map(({ href, label, icon: Icon, exact, color }) => {
             const active = isActive(pathname, href, exact);
             return (
               <Link
@@ -186,7 +187,7 @@ export function MerchantSidebar({
                   active ? "bg-[#33271F] text-white" : "text-ink-300",
                 )}
               >
-                <Icon className="size-4" aria-hidden />
+                <Icon className={cn("size-4", color)} aria-hidden />
                 {label}
               </Link>
             );

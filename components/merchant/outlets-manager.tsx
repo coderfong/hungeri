@@ -1,23 +1,107 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Store, Trash2, Plus, Navigation } from "lucide-react";
+import Image from "next/image";
+import { Store, Trash2, Plus, Navigation, ImagePlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SG_AREAS } from "@/lib/geo/areas";
-import { addOutlet, deleteOutlet } from "@/lib/merchant/actions";
+import { createClient } from "@/lib/supabase/client";
+import { addOutlet, deleteOutlet, setOutletPhoto } from "@/lib/merchant/actions";
 import type { LocationRow } from "@/types/database";
 import { Button } from "@/components/ui/button";
+import { ImageUpload } from "@/components/merchant/image-upload";
 
 const inputCls =
   "w-full rounded-btn border-[1.5px] border-line bg-bg px-3.5 py-3 text-[15px] outline-none focus:border-persimmon-500 focus:ring-4 focus:ring-persimmon-100";
+
+/** Outlet thumbnail + photo picker: tap to upload/replace the outlet's photo. */
+function OutletPhoto({ outlet, onError }: { outlet: LocationRow; onError: (msg: string) => void }) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    try {
+      if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
+      const supabase = createClient();
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `outlets/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("deal-images")
+        .upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("deal-images").getPublicUrl(path);
+      const res = await setOutletPhoto(outlet.id, data.publicUrl);
+      if (!res.ok) throw new Error(res.error);
+      router.refresh();
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => inputRef.current?.click()}
+      title={outlet.photo_url ? "Change outlet photo" : "Add outlet photo"}
+      className="group relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-persimmon-50"
+    >
+      {outlet.photo_url ? (
+        <Image
+          src={outlet.photo_url}
+          alt={outlet.address ?? "Outlet photo"}
+          fill
+          sizes="56px"
+          className="object-cover"
+        />
+      ) : (
+        <Store className="size-5 text-persimmon-500" aria-hidden />
+      )}
+      <span
+        className={cn(
+          "absolute inset-0 flex items-center justify-center bg-ink-900/45 text-white transition-opacity",
+          busy ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+        )}
+      >
+        {busy ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+        ) : (
+          <ImagePlus className="size-4" aria-hidden />
+        )}
+      </span>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) upload(f);
+          e.target.value = "";
+        }}
+      />
+    </button>
+  );
+}
 
 export function OutletsManager({ outlets }: { outlets: LocationRow[] }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
-  const [form, setForm] = useState({ address: "", postal_code: "", lat: "", lng: "", phone: "" });
+  const [form, setForm] = useState({
+    address: "",
+    postal_code: "",
+    lat: "",
+    lng: "",
+    phone: "",
+    photo_url: "",
+  });
 
   function save() {
     setError(null);
@@ -28,12 +112,13 @@ export function OutletsManager({ outlets }: { outlets: LocationRow[] }) {
         lat: Number(form.lat),
         lng: Number(form.lng),
         phone: form.phone || undefined,
+        photo_url: form.photo_url || undefined,
       });
       if (!res.ok) {
         setError(res.error);
         return;
       }
-      setForm({ address: "", postal_code: "", lat: "", lng: "", phone: "" });
+      setForm({ address: "", postal_code: "", lat: "", lng: "", phone: "", photo_url: "" });
       setAdding(false);
       router.refresh();
     });
@@ -48,11 +133,10 @@ export function OutletsManager({ outlets }: { outlets: LocationRow[] }) {
 
   return (
     <div className="space-y-3">
+      {error && !adding && <p className="text-sm font-semibold text-error">{error}</p>}
       {outlets.map((o) => (
         <div key={o.id} className="flex items-center gap-3 rounded-card border border-line-soft bg-surface p-4">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-persimmon-50">
-            <Store className="size-5 text-persimmon-500" aria-hidden />
-          </span>
+          <OutletPhoto outlet={o} onError={setError} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{o.address}</div>
             <div className="text-xs text-muted">
@@ -119,7 +203,7 @@ export function OutletsManager({ outlets }: { outlets: LocationRow[] }) {
               </option>
             ))}
           </select>
-          <div className="mb-3 grid grid-cols-2 gap-2">
+          <div className="mb-2 grid grid-cols-2 gap-2">
             <input
               className={inputCls}
               placeholder="Latitude"
@@ -131,6 +215,14 @@ export function OutletsManager({ outlets }: { outlets: LocationRow[] }) {
               placeholder="Longitude"
               value={form.lng}
               onChange={(e) => setForm((f) => ({ ...f, lng: e.target.value }))}
+            />
+          </div>
+          <div className="mb-3">
+            <ImageUpload
+              value={form.photo_url}
+              onChange={(url) => setForm((f) => ({ ...f, photo_url: url }))}
+              pathPrefix="outlets"
+              label="Outlet photo (optional) · JPG/PNG"
             />
           </div>
           <div className="flex gap-2">

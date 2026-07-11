@@ -38,10 +38,10 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Eye} label="Views" value={stats.totalViews.toLocaleString()} />
-        <StatCard icon={Heart} label="Saves" value={stats.totalSaves.toLocaleString()} />
-        <StatCard icon={TicketCheck} label="Redemptions" value={stats.totalRedemptions.toLocaleString()} />
-        <StatCard icon={Percent} label="Save→Redeem" value={`${convRate}%`} sub="Saves that redeemed" />
+        <StatCard icon={Eye} label="Views" value={stats.totalViews.toLocaleString()} tone="brand" />
+        <StatCard icon={Heart} label="Saves" value={stats.totalSaves.toLocaleString()} tone="urgent" />
+        <StatCard icon={TicketCheck} label="Redemptions" value={stats.totalRedemptions.toLocaleString()} tone="savings" />
+        <StatCard icon={Percent} label="Save→Redeem" value={`${convRate}%`} sub="Saves that redeemed" tone="gold" />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">

@@ -1,6 +1,7 @@
 import { BadgeCheck } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BusinessActions } from "@/components/admin/business-actions";
+import { AddBusinessForm } from "@/components/admin/add-business-form";
 
 export const metadata = { title: "Businesses" };
 
@@ -20,7 +21,11 @@ export default async function BusinessesPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-6 md:px-8">
-      <h1 className="mb-5 font-display text-2xl font-extrabold">Businesses</h1>
+      <h1 className="mb-4 font-display text-2xl font-extrabold">Businesses</h1>
+
+      <div className="mb-4">
+        <AddBusinessForm />
+      </div>
 
       <div className="overflow-hidden rounded-card border border-line-soft bg-surface">
         {businesses.map((b) => (

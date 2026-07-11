@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, QrCode, Check, Camera, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LogoMark } from "@/components/logo";
 
 /**
  * Redeem-by-scan flow. Opens the device camera, reads the shop's static QR, and
@@ -116,63 +117,79 @@ export function RedeemFlow({ dealId }: { dealId: string }) {
             role="dialog"
             aria-modal="true"
             aria-label="Scan to redeem"
-            className="relative w-full max-w-md rounded-[20px] bg-surface p-5"
+            className="relative w-full max-w-md overflow-hidden rounded-[20px] bg-surface"
           >
-            <div className="mb-3 flex items-center">
-              <h2 className="font-display text-xl font-extrabold">Scan to redeem</h2>
-              <button onClick={close} aria-label="Close" className="ml-auto text-ink-500">
+            {/* Branded header */}
+            <div className="flex items-center gap-2.5 bg-gradient-to-r from-persimmon-600 to-persimmon-400 px-5 py-3.5 text-white">
+              <LogoMark className="size-8 rounded-[9px]" />
+              <h2 className="font-display text-lg font-extrabold">Scan to redeem</h2>
+              <button onClick={close} aria-label="Close" className="ml-auto text-white/90 hover:text-white">
                 <X className="size-5" aria-hidden />
               </button>
             </div>
 
-            {phase === "scanning" && (
-              <>
-                <div
-                  id={READER_ID}
-                  className="aspect-square w-full overflow-hidden rounded-card bg-ink-900"
-                />
-                <p className="mt-3 flex items-center justify-center gap-2 text-center text-sm font-semibold text-ink-500">
-                  <Camera className="size-4 text-persimmon-500" aria-hidden />
-                  Point at the Hungeri QR at the counter
-                </p>
-              </>
-            )}
-
-            {phase === "verifying" && (
-              <div className="py-10 text-center text-sm font-semibold text-ink-500">Verifying…</div>
-            )}
-
-            {phase === "success" && (
-              <div className="py-6 text-center">
-                <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-savings-bg">
-                  <Check className="size-7 text-savings" aria-hidden />
-                </div>
-                <div className="font-display text-xl font-extrabold">Redeemed!</div>
-                <p className="mt-1 text-sm text-ink-500">
-                  Show this to staff at {result?.shop ?? "the counter"}.
-                </p>
-                {result?.code && (
-                  <div className="mx-auto mt-4 inline-block rounded-btn bg-ink-900 px-5 py-3 font-mono text-lg font-bold tracking-widest text-white">
-                    {result.code}
+            <div className="p-5">
+              {phase === "scanning" && (
+                <>
+                  <div className="relative overflow-hidden rounded-card">
+                    <div id={READER_ID} className="aspect-square w-full bg-ink-900" />
+                    {/* Aiming frame over the camera view */}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-8 rounded-[18px] border-2 border-dashed border-white/70"
+                    />
                   </div>
-                )}
-                <Button className="mt-5 w-full" onClick={close}>
-                  Done
-                </Button>
-              </div>
-            )}
+                  <p className="mt-3 flex items-center justify-center gap-2 text-center text-sm font-semibold text-ink-500">
+                    <Camera className="size-4 text-persimmon-500" aria-hidden />
+                    Point at the Hungeri QR at the counter
+                  </p>
+                </>
+              )}
 
-            {phase === "error" && (
-              <div className="py-6 text-center">
-                <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-urgent-bg">
-                  <AlertTriangle className="size-7 text-urgent" aria-hidden />
+              {phase === "verifying" && (
+                <div className="flex flex-col items-center gap-3 py-10 text-sm font-semibold text-ink-500">
+                  <LogoMark className="size-10 animate-pulse rounded-xl" />
+                  Verifying…
                 </div>
-                <p className="text-sm font-semibold text-ink-700">{message}</p>
-                <Button className="mt-5 w-full" onClick={launch}>
-                  Try again
-                </Button>
-              </div>
-            )}
+              )}
+
+              {phase === "success" && (
+                <div className="py-3 text-center">
+                  <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-savings-bg ring-8 ring-savings-bg/50">
+                    <Check className="size-8 text-savings" strokeWidth={3} aria-hidden />
+                  </div>
+                  <div className="font-display text-2xl font-extrabold">Redeemed!</div>
+                  <p className="mt-1 text-sm text-ink-500">
+                    Show this to staff at {result?.shop ?? "the counter"}.
+                  </p>
+                  {result?.code && (
+                    <div className="mx-auto mt-4 inline-block rounded-card border-2 border-dashed border-line bg-bg px-6 py-3.5">
+                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                        Your code
+                      </div>
+                      <div className="font-mono text-2xl font-bold tracking-[0.2em] text-ink-900">
+                        {result.code}
+                      </div>
+                    </div>
+                  )}
+                  <Button className="mt-5 w-full" onClick={close}>
+                    Done
+                  </Button>
+                </div>
+              )}
+
+              {phase === "error" && (
+                <div className="py-3 text-center">
+                  <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-urgent-bg">
+                    <AlertTriangle className="size-8 text-urgent" aria-hidden />
+                  </div>
+                  <p className="text-sm font-semibold text-ink-700">{message}</p>
+                  <Button className="mt-5 w-full" onClick={launch}>
+                    Try again
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -143,9 +143,24 @@ export async function addOutlet(input: OutletInput): Promise<Result> {
     lat: parsed.data.lat,
     lng: parsed.data.lng,
     phone: parsed.data.phone || null,
+    photo_url: parsed.data.photo_url || null,
   });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard/outlets");
+  return { ok: true };
+}
+
+/** Set (or clear) an outlet's photo. */
+export async function setOutletPhoto(id: string, photoUrl: string): Promise<Result> {
+  const { business, db: supabase } = await requireBusiness();
+  const { error } = await supabase
+    .from("locations")
+    .update({ photo_url: photoUrl || null })
+    .eq("id", id)
+    .eq("business_id", business.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/dashboard/outlets");
+  revalidatePath(`/b/${business.slug}`);
   return { ok: true };
 }
 

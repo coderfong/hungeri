@@ -61,6 +61,83 @@ export async function requestChanges(id: string, reason?: string): Promise<Resul
 }
 
 // ── Businesses ───────────────────────────────────────────────────────────────
+const adminBusinessSchema = z.object({
+  name: z.string().min(2, "Business name is required"),
+  description: z.string().max(600).optional(),
+  cuisine_tags: z.array(z.string()).default([]),
+  price_level: z.coerce.number().min(1).max(4).optional(),
+  website: z.string().url().optional().or(z.literal("")),
+  cover_url: z.string().url().optional().or(z.literal("")),
+  outlet: z.object({
+    address: z.string().min(3, "Address is required"),
+    postal_code: z.string().optional(),
+    lat: z.coerce.number().min(-90).max(90),
+    lng: z.coerce.number().min(-180).max(180),
+    phone: z.string().optional(),
+  }),
+});
+export type AdminBusinessInput = z.infer<typeof adminBusinessSchema>;
+
+/**
+ * Admin creates a business directly (e.g. onboarding a shop that isn't on the
+ * platform yet). The admin becomes the owner row (businesses.owner_user_id is
+ * NOT NULL); ownership can be transferred when the merchant signs up. Goes live
+ * immediately — admins add real shops to show diners.
+ */
+export async function createBusinessAdmin(
+  input: AdminBusinessInput,
+): Promise<Result & { slug?: string }> {
+  const profile = await requireAdmin();
+  const parsed = adminBusinessSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const d = parsed.data;
+  const admin = createAdminClient();
+
+  let slug =
+    d.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 50) || "business";
+  const { data: existing } = await admin
+    .from("businesses")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (existing) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
+
+  const { data: biz, error: bizErr } = await admin
+    .from("businesses")
+    .insert({
+      owner_user_id: profile.id,
+      name: d.name,
+      slug,
+      description: d.description || null,
+      cuisine_tags: d.cuisine_tags,
+      price_level: d.price_level ?? null,
+      website: d.website || null,
+      cover_url: d.cover_url || null,
+      status: "live",
+    })
+    .select("id")
+    .single();
+  if (bizErr || !biz) return { ok: false, error: bizErr?.message ?? "Could not create business" };
+
+  const { error: locErr } = await admin.from("locations").insert({
+    business_id: biz.id,
+    address: d.outlet.address,
+    postal_code: d.outlet.postal_code || null,
+    lat: d.outlet.lat,
+    lng: d.outlet.lng,
+    phone: d.outlet.phone || null,
+  });
+  if (locErr) return { ok: false, error: locErr.message };
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/");
+  return { ok: true, slug };
+}
+
 export async function verifyBusiness(id: string, verified: boolean): Promise<Result> {
   await requireAdmin();
   const admin = createAdminClient();
