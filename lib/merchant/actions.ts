@@ -143,7 +143,9 @@ export async function addOutlet(input: OutletInput): Promise<Result> {
     lat: parsed.data.lat,
     lng: parsed.data.lng,
     phone: parsed.data.phone || null,
-    photo_url: parsed.data.photo_url || null,
+    // Only send photo_url when set, so adding outlets keeps working if
+    // migration 0012 hasn't been applied yet.
+    ...(parsed.data.photo_url ? { photo_url: parsed.data.photo_url } : {}),
   });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard/outlets");
