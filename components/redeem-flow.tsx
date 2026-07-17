@@ -19,7 +19,11 @@ export function RedeemFlow({ dealId }: { dealId: string }) {
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("idle");
   const [message, setMessage] = useState<string>("");
-  const [result, setResult] = useState<{ shop?: string; code?: string | null } | null>(null);
+  const [result, setResult] = useState<{
+    shop?: string;
+    deal?: string;
+    phone?: string | null;
+  } | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const scannerRef = useRef<any>(null);
 
@@ -47,7 +51,7 @@ export function RedeemFlow({ dealId }: { dealId: string }) {
         setPhase("error");
         return;
       }
-      setResult({ shop: json.shop, code: json.code });
+      setResult({ shop: json.shop, deal: json.deal, phone: json.phone });
       setPhase("success");
     } catch {
       setMessage("Something went wrong. Try again.");
@@ -162,16 +166,24 @@ export function RedeemFlow({ dealId }: { dealId: string }) {
                   <p className="mt-1 text-sm text-ink-500">
                     Show this to staff at {result?.shop ?? "the counter"}.
                   </p>
-                  {result?.code && (
-                    <div className="mx-auto mt-4 inline-block rounded-card border-2 border-dashed border-line bg-bg px-6 py-3.5">
-                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
-                        Your code
-                      </div>
-                      <div className="font-mono text-2xl font-bold tracking-[0.2em] text-ink-900">
-                        {result.code}
-                      </div>
+                  <div className="mx-auto mt-4 max-w-xs rounded-card border-2 border-dashed border-line bg-bg px-5 py-4 text-left">
+                    <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                      Deal
                     </div>
-                  )}
+                    <div className="mt-0.5 font-display text-base font-extrabold text-ink-900">
+                      {result?.deal ?? "Your deal"}
+                    </div>
+                    {result?.phone && (
+                      <>
+                        <div className="mt-3 text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                          Diner
+                        </div>
+                        <div className="mt-0.5 font-mono text-lg font-bold tracking-wide text-ink-900">
+                          {result.phone}
+                        </div>
+                      </>
+                    )}
+                  </div>
                   <Button className="mt-5 w-full" onClick={close}>
                     Done
                   </Button>

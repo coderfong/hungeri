@@ -95,11 +95,15 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
   // Admins and super-merchants can set any shop's cover image inline.
   const canEdit = !!profile && (profile.role === "admin" || isSuperMerchant(profile.email));
 
-  // Carousel = admin/super curated spotlight shops + paid-featured shops, else
-  // the top-ranked "Top picks". Every slide is a real business linking to its
-  // own /b/[slug] page (searchable, cover editable inline).
+  // Carousel = admin/super curated spotlight shops + paid-featured shops, shown
+  // first, then topped up with the top-ranked "Top picks". Featuring a shop adds
+  // it to the carousel rather than replacing everything else. Every slide is a
+  // real business linking to its own /b/[slug] page (searchable, cover editable).
   const curated = shops.filter((s) => s.spotlight || s.featured);
-  const picks = curated.length > 0 ? curated : shops.filter((s) => s.headline).slice(0, 6);
+  const topPicks = shops
+    .filter((s) => s.headline && !s.spotlight && !s.featured)
+    .slice(0, 6);
+  const picks = [...curated, ...topPicks];
   const pickSlugs = new Set(picks.map((s) => s.business.slug));
   const rest = shops.filter((s) => !pickSlugs.has(s.business.slug));
 

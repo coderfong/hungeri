@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Repeat } from "lucide-react";
-import type { DealType, DealChannel, RedemptionMethod } from "@/types/database";
+import type { DealType, DealChannel } from "@/types/database";
 import { DEAL_TYPES, CHANNELS, DIETARY } from "@/lib/deals/facets";
 import { saveDeal } from "@/lib/merchant/actions";
 import type { DealInput } from "@/lib/merchant/schema";
@@ -23,9 +23,6 @@ type FormState = {
   start_at: string;
   end_at: string;
   recurring: boolean;
-  redemption_method: RedemptionMethod;
-  redemption_code: string;
-  redemption_url: string;
   image_url: string;
   terms: string;
   fine_print: string;
@@ -102,9 +99,6 @@ export function DealForm({
     start_at: initial?.start_iso ? localInput(initial.start_iso) : localInput(),
     end_at: initial?.end_iso ? localInput(initial.end_iso) : localInput(new Date(Date.now() + 7 * 864e5).toISOString()),
     recurring: initial?.recurring ?? false,
-    redemption_method: initial?.redemption_method ?? "show_screen",
-    redemption_code: initial?.redemption_code ?? "",
-    redemption_url: initial?.redemption_url ?? "",
     image_url: initial?.image_url ?? "",
     terms: initial?.terms ?? "",
     fine_print: initial?.fine_print ?? "",
@@ -136,9 +130,7 @@ export function DealForm({
       start_at: form.start_at,
       end_at: form.end_at,
       recurring: form.recurring,
-      redemption_method: form.redemption_method,
-      redemption_code: form.redemption_code || undefined,
-      redemption_url: form.redemption_url || undefined,
+      redemption_method: "show_screen",
       image_url: form.image_url || undefined,
       terms: form.terms || undefined,
       fine_print: form.fine_print || undefined,
@@ -302,38 +294,14 @@ export function DealForm({
             </div>
           </Field>
 
-          <Field label="How diners redeem">
-            <select
-              className={inputCls}
-              value={form.redemption_method}
-              onChange={(e) => set("redemption_method", e.target.value as RedemptionMethod)}
-            >
-              <option value="show_screen">Show screen in-store</option>
-              <option value="code">Redemption code</option>
-              <option value="link">Online link</option>
-              <option value="auto">Auto-applied</option>
-            </select>
+          <Field
+            label="How diners redeem"
+            hint="Diners scan the shop QR in-store and show the “Redeemed!” screen to staff."
+          >
+            <div className={cn(inputCls, "flex items-center bg-line-soft text-ink-500")}>
+              Show screen in-store
+            </div>
           </Field>
-          {form.redemption_method === "code" && (
-            <Field label="Redemption code">
-              <input
-                className={inputCls}
-                value={form.redemption_code}
-                onChange={(e) => set("redemption_code", e.target.value)}
-                placeholder="HUNGERI50"
-              />
-            </Field>
-          )}
-          {form.redemption_method === "link" && (
-            <Field label="Offer link">
-              <input
-                className={inputCls}
-                value={form.redemption_url}
-                onChange={(e) => set("redemption_url", e.target.value)}
-                placeholder="https://…"
-              />
-            </Field>
-          )}
 
           <Field label="Terms">
             <textarea

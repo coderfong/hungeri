@@ -50,9 +50,9 @@ export const dealInput = z
     end_at: z.string().min(1, "End date is required"),
     recurring: z.boolean().default(false),
     recurring_rule: z.any().optional(),
-    redemption_method: z.enum(["code", "show_screen", "auto", "link"]).default("show_screen"),
-    redemption_code: z.string().optional(),
-    redemption_url: z.string().url().optional().or(z.literal("")),
+    // Single redemption method: diners show the "Redeemed!" screen in-store after
+    // scanning the shop QR. Codes / links / auto-apply were removed.
+    redemption_method: z.literal("show_screen").default("show_screen"),
   })
   .refine((d) => new Date(d.end_at) > new Date(d.start_at), {
     message: "End must be after start",

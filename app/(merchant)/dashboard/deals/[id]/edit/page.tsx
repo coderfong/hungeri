@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireBusiness } from "@/lib/merchant/context";
 import { DealForm } from "@/components/merchant/deal-form";
-import type { DealChannel, RedemptionMethod } from "@/types/database";
+import type { DealChannel } from "@/types/database";
 
 export const metadata = { title: "Edit deal" };
 
@@ -34,9 +34,6 @@ export default async function EditDealPage({
         channels: (deal.channels ?? []) as DealChannel[],
         dietary_tags: deal.dietary_tags ?? [],
         recurring: !!deal.recurring_rule,
-        redemption_method: deal.redemption_method as RedemptionMethod,
-        redemption_code: deal.redemption_code ?? "",
-        redemption_url: deal.redemption_url ?? "",
         image_url: deal.image_url ?? "",
         terms: deal.terms ?? "",
         fine_print: deal.fine_print ?? "",

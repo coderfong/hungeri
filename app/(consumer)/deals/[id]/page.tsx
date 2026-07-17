@@ -249,10 +249,7 @@ function RedemptionPanel({ deal }: { deal: Awaited<ReturnType<typeof getDealDeta
         How to redeem
       </div>
       <p className="mb-3 text-sm text-line">
-        {deal.redemption_method === "show_screen" && "Show this screen in-store — staff will apply the deal."}
-        {deal.redemption_method === "code" && "Reveal your code and show it at the counter."}
-        {deal.redemption_method === "link" && "Open the offer link to claim online."}
-        {deal.redemption_method === "auto" && "This deal is applied automatically at checkout."}
+        Scan the shop QR in-store, then show the “Redeemed!” screen to staff.
       </p>
       {/* On desktop the redeem control lives here; on mobile it's the sticky CTA. */}
       <div className="hidden md:block">

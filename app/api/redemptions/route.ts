@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   // The deal + its business' QR token.
   const { data: deal } = await supabase
     .from("deals")
-    .select("id, redemption_method, redemption_code, businesses(qr_token, name)")
+    .select("id, title, redemption_method, businesses(qr_token, name)")
     .eq("id", parsed.data.deal_id)
     .maybeSingle();
   if (!deal) return NextResponse.json({ error: "deal_not_found" }, { status: 404 });
@@ -45,6 +45,11 @@ export async function POST(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // The consumer's phone (shown to staff on the redeemed screen so they can
+  // confirm who's redeeming). Phone-login stores it in the auth user's metadata.
+  const meta = (user?.user_metadata ?? {}) as { phone?: string; display_name?: string };
+  const phone: string | null = user ? meta.phone ?? meta.display_name ?? null : null;
   if (user) {
     await supabase.from("redemptions").insert({
       deal_id: parsed.data.deal_id,
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
     ok: true,
     recorded: !!user,
     shop: biz.name,
-    method: deal.redemption_method,
-    code: deal.redemption_method === "code" ? deal.redemption_code : null,
+    deal: deal.title,
+    phone,
   });
 }

@@ -208,8 +208,8 @@ export async function saveDeal(
     end_at: new Date(d.end_at).toISOString(),
     recurring_rule: buildRecurringRule(d),
     redemption_method: d.redemption_method,
-    redemption_code: d.redemption_code || null,
-    redemption_url: d.redemption_url || null,
+    redemption_code: null,
+    redemption_url: null,
     status,
     source: "merchant" as const,
   };
