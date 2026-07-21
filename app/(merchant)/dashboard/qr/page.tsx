@@ -41,7 +41,7 @@ export default async function QrPage() {
       </p>
 
       {/* Branded counter card — designed to be printed as-is. */}
-      <div className="hero-mesh mx-auto max-w-sm rounded-[28px] p-3 shadow-card">
+      <div className="qr-print-card hero-mesh mx-auto max-w-sm rounded-[28px] p-3 shadow-card">
         <div className="overflow-hidden rounded-[20px] bg-surface text-center shadow-e1">
           {/* Brand band */}
           <div className="relative overflow-hidden bg-gradient-to-r from-persimmon-600 via-persimmon-500 to-persimmon-400 px-6 pb-5 pt-5 text-white">

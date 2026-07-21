@@ -21,7 +21,7 @@ export type DealType =
   | "happy_hour"
   | "loyalty";
 export type DealChannel = "dine_in" | "takeaway" | "delivery";
-export type RedemptionMethod = "code" | "show_screen" | "auto" | "link";
+export type RedemptionMethod = "show_screen";
 export type DealStatus = "draft" | "pending_review" | "live" | "expired" | "rejected";
 export type DealSource = "merchant" | "curated" | "partner_api" | "scraped";
 export type PlacementTier = "featured" | "boosted" | "spotlight";

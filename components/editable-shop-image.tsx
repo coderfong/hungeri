@@ -6,6 +6,7 @@ import { ImagePlus, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DealImage } from "@/components/deal-image";
 import { setShopCover } from "@/lib/admin/shop-image";
+import { validateImageFile } from "@/lib/images/upload";
 
 /**
  * Shop cover image with an inline uploader for admins / super-merchants.
@@ -38,12 +39,11 @@ export function EditableShopImage({
     setError(null);
     setBusy(true);
     try {
-      if (!file.type.startsWith("image/")) throw new Error("Drop an image file.");
-      const ext = file.name.split(".").pop() ?? "jpg";
+      const ext = validateImageFile(file);
       const path = `shops/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("deal-images")
-        .upload(path, file, { upsert: true, cacheControl: "3600" });
+        .upload(path, file, { cacheControl: "3600", contentType: file.type });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("deal-images").getPublicUrl(path);
       const res = await setShopCover(businessId, data.publicUrl);
@@ -109,12 +109,13 @@ export function EditableShopImage({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         className="hidden"
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) upload(f);
+          e.target.value = "";
         }}
       />
     </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,7 +21,10 @@ export function DealImage({
   sizes?: string;
   priority?: boolean;
 }) {
-  if (src) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+
+  if (src && failedSrc !== src) {
+    const isRemote = /^https?:\/\//i.test(src);
     return (
       <Image
         src={src}
@@ -27,6 +33,11 @@ export function DealImage({
         sizes={sizes ?? "(max-width: 768px) 100vw, 400px"}
         className={cn("object-cover", className)}
         priority={priority}
+        // Merchant uploads can come from local or hosted Supabase instances.
+        // Serving remote uploads directly avoids a hard render failure when the
+        // storage hostname differs from the one present at build time.
+        unoptimized={isRemote}
+        onError={() => setFailedSrc(src)}
       />
     );
   }

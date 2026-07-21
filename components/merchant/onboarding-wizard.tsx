@@ -17,12 +17,11 @@ const inputCls =
 type OutletDraft = {
   address: string;
   postal_code: string;
-  lat: string;
-  lng: string;
+  area: string;
   phone: string;
 };
 
-const emptyOutlet: OutletDraft = { address: "", postal_code: "", lat: "", lng: "", phone: "" };
+const emptyOutlet: OutletDraft = { address: "", postal_code: "", area: "", phone: "" };
 
 export function OnboardingWizard() {
   const [step, setStep] = useState(1);
@@ -59,15 +58,17 @@ export function OnboardingWizard() {
         price_level: priceLevel ?? undefined,
         logo_url: logoUrl || undefined,
       },
-      outlets: outlets
-        .filter((o) => o.address && o.lat && o.lng)
-        .map((o) => ({
+      outlets: outlets.flatMap((o) => {
+        const area = SG_AREAS.find((candidate) => candidate.name === o.area);
+        if (!o.address || !area) return [];
+        return [{
           address: o.address,
           postal_code: o.postal_code || undefined,
-          lat: Number(o.lat),
-          lng: Number(o.lng),
+          lat: area.lat,
+          lng: area.lng,
           phone: o.phone || undefined,
-        })),
+        }];
+      }),
       uen: uen || undefined,
     };
     const res = await finishOnboarding(input);
@@ -212,15 +213,12 @@ export function OnboardingWizard() {
                     />
                   </div>
                   <select
-                    className={cn(inputCls, "mb-2")}
-                    onChange={(e) => {
-                      const a = SG_AREAS.find((x) => x.name === e.target.value);
-                      if (a) updateOutlet(i, { lat: String(a.lat), lng: String(a.lng) });
-                    }}
-                    defaultValue=""
+                    className={inputCls}
+                    value={o.area}
+                    onChange={(e) => updateOutlet(i, { area: e.target.value })}
                   >
                     <option value="" disabled>
-                      Quick-set coordinates from an area…
+                      Select the nearest area
                     </option>
                     {SG_AREAS.map((a) => (
                       <option key={a.name} value={a.name}>
@@ -228,20 +226,6 @@ export function OnboardingWizard() {
                       </option>
                     ))}
                   </select>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      className={inputCls}
-                      value={o.lat}
-                      onChange={(e) => updateOutlet(i, { lat: e.target.value })}
-                      placeholder="Latitude"
-                    />
-                    <input
-                      className={inputCls}
-                      value={o.lng}
-                      onChange={(e) => updateOutlet(i, { lng: e.target.value })}
-                      placeholder="Longitude"
-                    />
-                  </div>
                 </div>
               ))}
               <button
@@ -253,7 +237,7 @@ export function OnboardingWizard() {
               <Button
                 size="lg"
                 className="w-full"
-                disabled={!outlets.some((o) => o.address && o.lat && o.lng)}
+                disabled={!outlets.some((o) => o.address && o.area)}
                 onClick={() => setStep(3)}
               >
                 Continue <ArrowRight className="size-[18px]" aria-hidden />

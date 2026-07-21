@@ -168,6 +168,12 @@ export function RedeemFlow({ dealId }: { dealId: string }) {
                   </p>
                   <div className="mx-auto mt-4 max-w-xs rounded-card border-2 border-dashed border-line bg-bg px-5 py-4 text-left">
                     <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted">
+                      Store
+                    </div>
+                    <div className="mt-0.5 font-display text-base font-extrabold text-ink-900">
+                      {result?.shop ?? "Your store"}
+                    </div>
+                    <div className="mt-3 text-[10px] font-extrabold uppercase tracking-widest text-muted">
                       Deal
                     </div>
                     <div className="mt-0.5 font-display text-base font-extrabold text-ink-900">

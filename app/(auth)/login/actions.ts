@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { roleForPhone, phoneEmail } from "@/config/role-phones";
 import type { UserRole } from "@/types/database";
+import { normalizePhone, safeInternalRedirect } from "@/lib/phone-auth";
 
 /**
  * Phone-number login WITHOUT verification.
@@ -25,13 +26,7 @@ import type { UserRole } from "@/types/database";
  * owner. That's intentional for this MVP; do not ship it to production as-is.
  */
 
-export type LoginState = { error?: string };
-
-/** Reduce user input to bare digits and sanity-check the length. */
-function normalizePhone(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "");
-  return digits.length >= 7 && digits.length <= 15 ? digits : null;
-}
+export type LoginState = { error?: string; merchantAccount?: boolean };
 
 /** Where each role lands by default when no explicit redirect was requested. */
 function homeForRole(role: UserRole): string {
@@ -54,15 +49,32 @@ export async function loginWithPhone(
   // 500 that leaves the form silently stuck. The redirect() below must stay
   // OUTSIDE this try — it signals success by throwing NEXT_REDIRECT.
   let ok = false;
+  let accountRole = role;
   try {
     const admin = createAdminClient();
+
+    // Merchant accounts must use their password-backed portal, including
+    // self-onboarded numbers that are not present in the legacy allowlist.
+    const { data: existingProfile } = await admin
+      .from("users")
+      .select("role")
+      .eq("email", email)
+      .maybeSingle();
+    if (role === "merchant" || existingProfile?.role === "merchant") {
+      return {
+        error: "This is a merchant account. Sign in through the merchant portal.",
+        merchantAccount: true,
+      };
+    }
+
+    accountRole = (existingProfile?.role ?? role) as UserRole;
 
     // Create the account on first sign-in; the signup trigger reads the role
     // from metadata. On repeat logins it already exists (role stays as first set).
     const { error: createErr } = await admin.auth.admin.createUser({
       email,
       email_confirm: true,
-      user_metadata: { display_name: digits, phone: digits, role },
+      user_metadata: { display_name: digits, phone: digits, role: accountRole },
     });
     if (createErr && !/exist|registered|already/i.test(createErr.message)) {
       return { error: createErr.message };
@@ -96,6 +108,6 @@ export async function loginWithPhone(
 
   if (!ok) return { error: "Could not sign you in. Try again." };
 
-  const redirectTo = requested || homeForRole(role);
+  const redirectTo = safeInternalRedirect(requested, homeForRole(accountRole));
   redirect(redirectTo);
 }

@@ -3,7 +3,7 @@
 import { Suspense, useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Phone } from "lucide-react";
+import { ArrowRight, Phone, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/logo";
 import { loginWithPhone, type LoginState } from "./actions";
@@ -42,13 +42,9 @@ function LoginForm() {
       <div className="relative">
         <div className="mb-7 text-center">
           <LogoMark className="mx-auto mb-5 block size-[60px] rounded-[18px] shadow-[0_10px_24px_rgba(255,90,31,.4)]" />
-          <h1 className="font-display text-3xl font-extrabold leading-tight">
-            The good deals,
-            <br />
-            before they&apos;re gone
-          </h1>
+          <h1 className="font-display text-3xl font-extrabold leading-tight">Diner sign in</h1>
           <p className="mt-2 text-sm text-ink-500">
-            Enter your phone number to sign in — no password, no code.
+            Save and redeem the best food deals with just your phone number.
           </p>
         </div>
 
@@ -72,7 +68,7 @@ function LoginForm() {
           </div>
           <Button type="submit" size="lg" disabled={pending} className="w-full">
             <Phone className="size-[18px]" aria-hidden />
-            {pending ? "Signing in…" : "Continue"}
+            {pending ? "Signing in…" : "Continue as diner"}
           </Button>
         </form>
 
@@ -80,7 +76,17 @@ function LoginForm() {
           <p className="mt-3 text-center text-sm text-error">{state.error}</p>
         )}
 
-        <div className="mt-6 text-center">
+        <div className="mt-5 border-t border-line pt-5 text-center">
+          <Link
+            href="/merchant-login"
+            className="inline-flex items-center gap-2 rounded-btn border-[1.5px] border-line bg-surface px-4 py-2.5 text-sm font-bold text-ink-700 hover:border-persimmon-300"
+          >
+            <Store className="size-4 text-persimmon-500" aria-hidden />
+            Merchant sign in
+          </Link>
+        </div>
+
+        <div className="mt-4 text-center">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 text-[15px] font-bold text-persimmon-500 hover:underline"

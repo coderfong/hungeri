@@ -46,3 +46,26 @@ export const TIERS: Record<PlacementTier, TierSpec> = {
 };
 
 export const TIER_ORDER: PlacementTier[] = ["boosted", "featured"];
+
+/** Higher values win when stale/overlapping active placements exist. */
+export const PLACEMENT_PRIORITY: Record<PlacementTier, number> = {
+  boosted: 1,
+  featured: 2,
+  spotlight: 3,
+};
+
+export function higherPlacementTier(
+  current: PlacementTier | null,
+  candidate: PlacementTier | null,
+): PlacementTier | null {
+  if (!current) return candidate;
+  if (!candidate) return current;
+  return PLACEMENT_PRIORITY[candidate] > PLACEMENT_PRIORITY[current]
+    ? candidate
+    : current;
+}
+
+/** Featured and legacy spotlight placements belong in the homepage carousel. */
+export function isCarouselPlacement(tier: PlacementTier | null): boolean {
+  return tier === "featured" || tier === "spotlight";
+}

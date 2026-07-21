@@ -37,7 +37,7 @@ export type MerchantContext = {
  */
 export async function getMerchantContext(): Promise<MerchantContext> {
   const profile = await getCurrentProfile();
-  if (!profile) redirect("/login?redirect=/dashboard");
+  if (!profile) redirect("/merchant-login?redirect=/dashboard");
 
   const isSuper = isSuperMerchant(profile.email);
 

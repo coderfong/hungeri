@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { DealStatus, PlacementTier } from "@/types/database";
-import { TIERS } from "@/lib/placements/tiers";
+import { TIERS, TIER_ORDER } from "@/lib/placements/tiers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile } from "@/lib/auth";
@@ -248,6 +248,9 @@ export async function createPlacement(
   dealId: string,
   tier: PlacementTier,
 ): Promise<Result<{ id: string }>> {
+  if (!TIER_ORDER.includes(tier)) {
+    return { ok: false, error: "That placement tier is no longer available" };
+  }
   const { business, db: supabase } = await requireBusiness();
 
   const { data: deal } = await supabase
@@ -287,8 +290,19 @@ export async function createPlacement(
     .single();
   if (error || !data) return { ok: false, error: error?.message ?? "Could not activate" };
 
+  // Keep a single active placement per deal. This also cleans up older rows
+  // created before tier switching was enforced, so the consumer query never
+  // has to guess whether an old Boosted row or the new Featured row should win.
+  await admin
+    .from("featured_placements")
+    .update({ status: "ended" })
+    .eq("deal_id", dealId)
+    .eq("status", "active")
+    .neq("id", data.id);
+
   revalidatePath("/dashboard/placements");
   revalidatePath("/");
+  revalidatePath("/near-me");
   return { ok: true, data: { id: data.id } };
 }
 

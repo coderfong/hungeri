@@ -2,7 +2,6 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Store, Trash2, Plus, Navigation, ImagePlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SG_AREAS } from "@/lib/geo/areas";
@@ -11,6 +10,8 @@ import { addOutlet, deleteOutlet, setOutletPhoto } from "@/lib/merchant/actions"
 import type { LocationRow } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/merchant/image-upload";
+import { DealImage } from "@/components/deal-image";
+import { validateImageFile } from "@/lib/images/upload";
 
 const inputCls =
   "w-full rounded-btn border-[1.5px] border-line bg-bg px-3.5 py-3 text-[15px] outline-none focus:border-persimmon-500 focus:ring-4 focus:ring-persimmon-100";
@@ -24,13 +25,12 @@ function OutletPhoto({ outlet, onError }: { outlet: LocationRow; onError: (msg: 
   async function upload(file: File) {
     setBusy(true);
     try {
-      if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
       const supabase = createClient();
-      const ext = file.name.split(".").pop() ?? "jpg";
+      const ext = validateImageFile(file);
       const path = `outlets/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("deal-images")
-        .upload(path, file, { upsert: true, cacheControl: "3600" });
+        .upload(path, file, { cacheControl: "3600", contentType: file.type });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("deal-images").getPublicUrl(path);
       const res = await setOutletPhoto(outlet.id, data.publicUrl);
@@ -44,48 +44,47 @@ function OutletPhoto({ outlet, onError }: { outlet: LocationRow; onError: (msg: 
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => inputRef.current?.click()}
-      title={outlet.photo_url ? "Change outlet photo" : "Add outlet photo"}
-      className="group relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-persimmon-50"
-    >
-      {outlet.photo_url ? (
-        <Image
-          src={outlet.photo_url}
-          alt={outlet.address ?? "Outlet photo"}
-          fill
-          sizes="56px"
-          className="object-cover"
-        />
-      ) : (
-        <Store className="size-5 text-persimmon-500" aria-hidden />
-      )}
-      <span
-        className={cn(
-          "absolute inset-0 flex items-center justify-center bg-ink-900/45 text-white transition-opacity",
-          busy ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-        )}
+    <div className="relative size-14 shrink-0">
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        title={outlet.photo_url ? "Change outlet photo" : "Add outlet photo"}
+        className="group relative flex size-14 items-center justify-center overflow-hidden rounded-xl bg-persimmon-50"
       >
-        {busy ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden />
+        {outlet.photo_url ? (
+          <DealImage
+            src={outlet.photo_url}
+            alt={outlet.address ?? "Outlet photo"}
+            sizes="56px"
+          />
         ) : (
-          <ImagePlus className="size-4" aria-hidden />
+          <Store className="size-5 text-persimmon-500" aria-hidden />
         )}
-      </span>
+        <span
+          className={cn(
+            "absolute inset-0 flex items-center justify-center bg-ink-900/45 text-white transition-opacity",
+            busy ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+          )}
+        >
+          {busy ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          ) : (
+            <ImagePlus className="size-4" aria-hidden />
+          )}
+        </span>
+      </button>
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         className="hidden"
-        onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) upload(f);
           e.target.value = "";
         }}
       />
-    </button>
+    </div>
   );
 }
 

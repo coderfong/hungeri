@@ -157,3 +157,36 @@
     animation: none;
   }
 }
+
+/* Print only the finished redemption counter card, never dashboard chrome. */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .qr-print-card,
+  .qr-print-card * {
+    visibility: visible !important;
+  }
+
+  .qr-print-card {
+    position: fixed !important;
+    left: 50% !important;
+    top: 0 !important;
+    width: 380px !important;
+    max-width: calc(100vw - 24mm) !important;
+    margin: 0 !important;
+    transform: translateX(-50%) !important;
+    box-shadow: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

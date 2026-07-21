@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { DealRow, DealType, DealChannel, PlacementTier } from "@/types/database";
 import { rankDeals, type GeoScope } from "@/lib/ranking";
+import { higherPlacementTier } from "@/lib/placements/tiers";
 
 /**
  * Deal queries for the consumer surface. Filtering is pushed to Postgres (FTS +
@@ -60,7 +61,7 @@ export type DealFilters = {
 const FEED_SELECT =
   "id, title, description, deal_type, discount_value, image_url, channels, dietary_tags, start_at, end_at, created_at, " +
   "businesses!inner(id, name, slug, price_level, cuisine_tags, logo_url, cover_url, verified, status), " +
-  "featured_placements(tier, status, start_at, end_at)";
+  "featured_placements(tier, status, geo_scope, start_at, end_at)";
 
 const DAY_MS = 86_400_000;
 
@@ -71,12 +72,21 @@ function toFeedDeal(row: RawRow): FeedDeal {
   const biz = Array.isArray(row.businesses) ? row.businesses[0] : row.businesses;
   const placements = (row.featured_placements as RawRow[] | null) ?? [];
   const now = Date.now();
-  const active = placements.find(
-    (p) =>
-      p.status === "active" &&
-      new Date(p.start_at as string).getTime() <= now &&
-      new Date(p.end_at as string).getTime() > now,
-  );
+  const active = placements
+    .filter(
+      (p) =>
+        p.status === "active" &&
+        new Date(p.start_at as string).getTime() <= now &&
+        new Date(p.end_at as string).getTime() > now,
+    )
+    .reduce<RawRow | null>((best, placement) => {
+      if (!best) return placement;
+      const winningTier = higherPlacementTier(
+        best.tier as PlacementTier,
+        placement.tier as PlacementTier,
+      );
+      return winningTier === placement.tier ? placement : best;
+    }, null);
   const scope = active?.geo_scope as
     | { lat?: number; lng?: number; radius_m?: number }
     | null
@@ -197,6 +207,8 @@ export type ShopListing = {
   dealCount: number;
   /** Paid placement is active. */
   featured: boolean;
+  /** Highest active paid tier across this shop's live deals. */
+  placementTier: PlacementTier | null;
   /** Admin/super-merchant curated into the homepage carousel. */
   spotlight: boolean;
 };
@@ -253,11 +265,13 @@ export async function getFeedShops(filters: DealFilters = {}): Promise<ShopListi
         headline: d,
         dealCount: 1,
         featured: d.featured,
+        placementTier: d.placementTier,
         spotlight: spotlightIds.has(biz.id),
       });
     } else {
       existing.dealCount += 1;
       existing.featured = existing.featured || d.featured;
+      existing.placementTier = higherPlacementTier(existing.placementTier, d.placementTier);
     }
   }
 
@@ -274,6 +288,7 @@ export async function getFeedShops(filters: DealFilters = {}): Promise<ShopListi
         headline: null,
         dealCount: 0,
         featured: false,
+        placementTier: null,
         spotlight: spotlightIds.has(b.id),
       });
     }

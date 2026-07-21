@@ -16,6 +16,7 @@ import { FeedSkeleton } from "@/components/feed-skeleton";
 import { QuickChips } from "@/components/filters/quick-chips";
 import { FilterSheet } from "@/components/filters/filter-sheet";
 import { strings } from "@/lib/i18n/strings";
+import { isCarouselPlacement } from "@/lib/placements/tiers";
 
 export default async function FeedPage({
   searchParams,
@@ -99,7 +100,7 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
   // first, then topped up with the top-ranked "Top picks". Featuring a shop adds
   // it to the carousel rather than replacing everything else. Every slide is a
   // real business linking to its own /b/[slug] page (searchable, cover editable).
-  const curated = shops.filter((s) => s.spotlight || s.featured);
+  const curated = shops.filter((s) => s.spotlight || isCarouselPlacement(s.placementTier));
   const topPicks = shops
     .filter((s) => s.headline && !s.spotlight && !s.featured)
     .slice(0, 6);
