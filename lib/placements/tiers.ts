@@ -69,3 +69,16 @@ export function higherPlacementTier(
 export function isCarouselPlacement(tier: PlacementTier | null): boolean {
   return tier === "featured" || tier === "spotlight";
 }
+
+/**
+ * Put active Boosted listings at the front of the standard grid while keeping
+ * the ranking order stable inside both the paid and organic groups.
+ */
+export function prioritizeBoostedListings<
+  T extends { placementTier: PlacementTier | null },
+>(listings: readonly T[]): T[] {
+  return [
+    ...listings.filter((listing) => listing.placementTier === "boosted"),
+    ...listings.filter((listing) => listing.placementTier !== "boosted"),
+  ];
+}

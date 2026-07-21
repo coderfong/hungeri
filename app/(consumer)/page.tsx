@@ -16,7 +16,10 @@ import { FeedSkeleton } from "@/components/feed-skeleton";
 import { QuickChips } from "@/components/filters/quick-chips";
 import { FilterSheet } from "@/components/filters/filter-sheet";
 import { strings } from "@/lib/i18n/strings";
-import { isCarouselPlacement } from "@/lib/placements/tiers";
+import {
+  isCarouselPlacement,
+  prioritizeBoostedListings,
+} from "@/lib/placements/tiers";
 
 export default async function FeedPage({
   searchParams,
@@ -106,7 +109,9 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
     .slice(0, 6);
   const picks = [...curated, ...topPicks];
   const pickSlugs = new Set(picks.map((s) => s.business.slug));
-  const rest = shops.filter((s) => !pickSlugs.has(s.business.slug));
+  const gridShops = prioritizeBoostedListings(
+    shops.filter((s) => !pickSlugs.has(s.business.slug)),
+  );
 
   const carousel: FeaturedBanner[] = picks.map((s) => ({
     businessId: s.business.id,
@@ -156,13 +161,13 @@ async function FeedContent({ filters }: { filters: ReturnType<typeof parseFilter
         </span>
       </div>
 
-      {rest.length === 0 ? (
+      {gridShops.length === 0 ? (
         <p className="mx-5 rounded-card border border-dashed border-line px-4 py-12 text-center text-sm text-ink-500 md:mx-7">
           {shops.length === 0 ? strings.feed.empty : "That's everything nearby for now."}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 px-5 sm:grid-cols-2 md:px-7 lg:grid-cols-3">
-          {rest.map((shop, i) => (
+          {gridShops.map((shop, i) => (
             <div
               key={shop.business.slug}
               className="animate-rise"

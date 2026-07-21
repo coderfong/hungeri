@@ -48,8 +48,6 @@ export const dealInput = z
     dietary_tags: z.array(z.string()).default([]),
     start_at: z.string().min(1, "Start date is required"),
     end_at: z.string().min(1, "End date is required"),
-    recurring: z.boolean().default(false),
-    recurring_rule: z.any().optional(),
     // Single redemption method: diners show the "Redeemed!" screen in-store after
     // scanning the shop QR. Codes / links / auto-apply were removed.
     redemption_method: z.literal("show_screen").default("show_screen"),

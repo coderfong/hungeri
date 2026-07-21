@@ -30,12 +30,6 @@ function slugify(name: string): string {
     .slice(0, 50);
 }
 
-/** Build a deals.recurring_rule jsonb from the simple toggle (daily window). */
-function buildRecurringRule(d: DealInput) {
-  if (!d.recurring) return null;
-  return d.recurring_rule ?? { freq: "daily" };
-}
-
 // ── Onboarding ───────────────────────────────────────────────────────────────
 export async function createBusinessWithOutlets(
   input: OnboardingInput,
@@ -206,7 +200,9 @@ export async function saveDeal(
     dietary_tags: d.dietary_tags,
     start_at: new Date(d.start_at).toISOString(),
     end_at: new Date(d.end_at).toISOString(),
-    recurring_rule: buildRecurringRule(d),
+    // Recurring deals are no longer offered. Explicitly clear legacy metadata
+    // whenever an older deal is edited.
+    recurring_rule: null,
     redemption_method: d.redemption_method,
     redemption_code: null,
     redemption_url: null,

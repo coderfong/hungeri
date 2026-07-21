@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Repeat } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { DealType, DealChannel } from "@/types/database";
 import { DEAL_TYPES, CHANNELS, DIETARY } from "@/lib/deals/facets";
 import { saveDeal } from "@/lib/merchant/actions";
@@ -22,7 +22,6 @@ type FormState = {
   dietary_tags: string[];
   start_at: string;
   end_at: string;
-  recurring: boolean;
   image_url: string;
   terms: string;
   fine_print: string;
@@ -86,7 +85,7 @@ export function DealForm({
   businessId: string;
   businessName: string;
   dealId?: string;
-  initial?: Partial<FormState> & { start_iso?: string; end_iso?: string };
+  initial: Partial<FormState> & { start_iso: string; end_iso: string };
 }) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>({
@@ -96,9 +95,8 @@ export function DealForm({
     discount_value: initial?.discount_value ?? "",
     channels: initial?.channels ?? ["dine_in"],
     dietary_tags: initial?.dietary_tags ?? [],
-    start_at: initial?.start_iso ? localInput(initial.start_iso) : localInput(),
-    end_at: initial?.end_iso ? localInput(initial.end_iso) : localInput(new Date(Date.now() + 7 * 864e5).toISOString()),
-    recurring: initial?.recurring ?? false,
+    start_at: localInput(initial.start_iso),
+    end_at: localInput(initial.end_iso),
     image_url: initial?.image_url ?? "",
     terms: initial?.terms ?? "",
     fine_print: initial?.fine_print ?? "",
@@ -129,7 +127,6 @@ export function DealForm({
       dietary_tags: form.dietary_tags,
       start_at: form.start_at,
       end_at: form.end_at,
-      recurring: form.recurring,
       redemption_method: "show_screen",
       image_url: form.image_url || undefined,
       terms: form.terms || undefined,
@@ -240,31 +237,6 @@ export function DealForm({
               />
             </Field>
           </div>
-
-          <button
-            type="button"
-            onClick={() => set("recurring", !form.recurring)}
-            className="flex w-full items-center gap-3 rounded-[13px] border border-line-soft bg-surface px-4 py-3.5 text-left"
-          >
-            <Repeat className="size-5 text-persimmon-500" aria-hidden />
-            <span className="flex-1">
-              <span className="block text-sm font-bold">Recurring deal</span>
-              <span className="block text-xs text-muted">Auto-repeat daily in this window</span>
-            </span>
-            <span
-              className={cn(
-                "relative h-7 w-12 rounded-full transition-colors",
-                form.recurring ? "bg-persimmon-500" : "bg-line",
-              )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0.5 size-6 rounded-full bg-white transition-all",
-                  form.recurring ? "right-0.5" : "left-0.5",
-                )}
-              />
-            </span>
-          </button>
 
           <Field label="Channels">
             <div className="flex flex-wrap gap-2">

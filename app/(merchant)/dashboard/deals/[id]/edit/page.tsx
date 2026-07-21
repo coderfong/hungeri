@@ -33,7 +33,6 @@ export default async function EditDealPage({
         discount_value: deal.discount_value != null ? String(deal.discount_value) : "",
         channels: (deal.channels ?? []) as DealChannel[],
         dietary_tags: deal.dietary_tags ?? [],
-        recurring: !!deal.recurring_rule,
         image_url: deal.image_url ?? "",
         terms: deal.terms ?? "",
         fine_print: deal.fine_print ?? "",
